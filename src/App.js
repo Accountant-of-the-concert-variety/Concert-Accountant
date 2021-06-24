@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 
 // Hooking up API call
@@ -22,15 +21,11 @@ import './App.css';
 
 
 function App() {
-
-   return (
+  
+  return (
       <div className="App">
-         {
-
-         }
-
-
+        
       </div>
-   );
-
-   export default App;
+  );
+}
+  export default App;
