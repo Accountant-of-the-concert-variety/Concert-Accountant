@@ -1,35 +1,28 @@
 import logo from './logo.svg';
 import './App.css';
 
-//Allow user to create list
-//list name and budget
+// Hooking up API call
+// Grabbing search function from API to allow user to input keyword
+// https://app.ticketmaster.com/discovery/v2/events.json?
+// parameters: apikey, keyword
+// animation/image on isLoading before displaying search
 
-//stretch goals
-//filter through images to decide which pic to use
+// component to display search results
+
+// display all the events with price-range, date, name, image, url to selected event site
+
+// Form for creating list
+// Text input with placeholder "Create a list" that gets replaced with name
+// Allow user to enter a budget and name of the list
+// Lists stack on top of each other that can be minimized with a button
+// Store name and budget amount into its own database on firebase
+
+// On all the events displayed, have a button for each event where you can add it to the list
 
 function App() {
 
-   
-
-   $.ajax({
-      type: "GET",
-      url: "https://app.ticketmaster.com/discovery/v2/events.json?size=1&apikey=LTtkh2NXZOyGcG6HGOASJH8KgZ4JiKGX",
-      async: true,
-      dataType: "json",
-      success: function (json) {
-         console.log(json);
-         // Parse the response.
-         // Do other things.
-      },
-      error: function (xhr, status, err) {
-         // This time, we do not end up here!
-      }
-   });
-
-
    return (
       <div className="App">
-
          {
 
          }
@@ -37,6 +30,5 @@ function App() {
 
       </div>
    );
-}
 
-export default App;
+   export default App;
