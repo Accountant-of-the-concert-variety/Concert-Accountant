@@ -1,4 +1,5 @@
 import './App.css';
+import firebase from 'firebase';
 
 // Hooking up API call
 // Grabbing search function from API to allow user to input keyword
