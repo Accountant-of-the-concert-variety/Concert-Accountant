@@ -1,7 +1,7 @@
 const Search = ({submitForm, search, searchQuery}) => {
    return (
    <form onSubmit={submitForm}>
-   <i class="fas fa-search"></i>
+   <i className="fas fa-search"></i>
    <label className="sr-only" htmlFor="searchEvent">Search for an event</label>
    <input
      className="search"
