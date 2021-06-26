@@ -1,7 +1,7 @@
 function DisplayEvents({ events, displayType }) {
 
    const eventItems = events.map(event => {
-      const { name, image, date, venue, price } = event;
+      const { name, image, date, venue, price, button } = event;
 
       let displayItem =
          <li className="event">
@@ -19,9 +19,11 @@ function DisplayEvents({ events, displayType }) {
                <p>{venue.city}</p>
                <p>{venue.country}</p>
             </div>
+
+            <button onClick={button}>Add to Watch List</button>
          </li>
 
-      console.log(displayItem)
+      // console.log(displayItem)
 
       return (displayItem)
    })
