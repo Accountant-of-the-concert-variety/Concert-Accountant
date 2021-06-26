@@ -23,15 +23,61 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
-import firebase from 'firebase';
+import firebase from './firebase';
 
 function App() {
+   const [list, setList] = useState([]);
+   const [watchList, setWatchList] = useState([]);
+   const [userName, setUserName] = useState("Brandon");
+
+   useEffect(() => {
+
+      
+      //Not needed
+      // const userName = {
+      //    lists: {
+      //       watchList: {
+      //         asdasd: "eminem",
+      //         ASDaS: "asdsadafa"
+      //       },
+      //       chicago: [
+      //          "drake",
+      //          "rihanna"
+      //       ],
+      //       detroit: [
+      //          "clowns"
+      //       ]
+      //    }
+      // }
+
+      // const myList = [];
+
+      // for (const list in userName.lists) {
+      //    console.log(list);
+
+      //    if (list != "watchList") {
+      //       myList.push(list);
+      //    }
+      // }
+
+      // console.log(myList);
+
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+
+      dbRef.on('value', (response) => {
+         console.log(response.val());
+         setWatchList(response.val())
+      })
+
+   }, [])
+
 
    const [events, setEvents] = useState([]);
    const [search, setSearch] = useState("");
 
    const submitForm = (e) => {
       e.preventDefault();
+      // dbRef.push(search);
 
       const ticketMasterUrl = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
       const ticketMasterKey = "LTtkh2NXZOyGcG6HGOASJH8KgZ4JiKGX"
@@ -49,26 +95,34 @@ function App() {
          }).then(jsonData => {
             filterEvents(jsonData);
          })
-      // .catch(data => {
-      //    console.log("not found")
-      // })
+         .catch(data => {
+            console.log("not found")
+         })
       setSearch("");
-
-
-      // fetch(searchUrl + search)
-      //    .then(res => res.json())
-      //    .then(data => {
-      //       setEvents(data._embedded.events)
-      //    }).catch(data => {
-      //       console.log("not found");
-      //    })
-      // setSearch("");
    };
 
    const searchQuery = (e) => {
       setSearch(e.target.value);
    };
 
+   function addToWatchList() {
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+
+      console.log(watchList);
+
+      if (watchList) {
+         for (const list in watchList) {
+            console.log(search);
+            console.log(watchList);
+            console.log(watchList[list]);
+            if (search !== watchList[list]) {
+               dbRef.push(search);
+            }
+         }
+      } else {
+         dbRef.push(search);
+      }
+   }
 
    //in case we need to filter events (by price, selected image etc. before displaying on the page)
    function filterEvents(jsonData) {
@@ -82,6 +136,7 @@ function App() {
          const venueName = event._embedded.venues[0].name;
          const country = event._embedded.venues[0].country.countryCode;
          const city = event._embedded.venues[0].city.name;
+         const button = addToWatchList;
 
          const venue = {
             name: venueName,
@@ -90,8 +145,8 @@ function App() {
          }
          // const venue = `${venueName} ${city}, ${country}`;
 
-         console.log(venue);
-         console.log(event._embedded.venues[0]);
+         // console.log(venue);
+         // console.log(event._embedded.venues[0]);
 
          let price = {
             min: 0,
@@ -108,7 +163,7 @@ function App() {
          //update this to choose smallest image. Right now its just the first one
          const image = event.images[0].url;
 
-         return ({ name, image, date, venue, price })
+         return ({ name, image, date, venue, price, button })
       }));
 
    }
