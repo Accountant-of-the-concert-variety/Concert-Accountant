@@ -20,70 +20,65 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
+import WatchList from './WatchList';
 import firebase from './firebase';
 
 function App() {
-   const [list, setList] = useState([]);
-   const [watchList, setWatchList] = useState([]);
-   const [userName, setUserName] = useState("Brandon");
-
-   useEffect(() => {
-
-      
-      //Not needed
-      // const userName = {
-      //    lists: {
-      //       watchList: {
-      //         asdasd: "eminem",
-      //         ASDaS: "asdsadafa"
-      //       },
-      //       chicago: [
-      //          "drake",
-      //          "rihanna"
-      //       ],
-      //       detroit: [
-      //          "clowns"
-      //       ]
-      //    }
-      // }
-
-      // const myList = [];
-
-      // for (const list in userName.lists) {
-      //    console.log(list);
-
-      //    if (list != "watchList") {
-      //       myList.push(list);
-      //    }
-      // }
-
-      // console.log(myList);
-
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
-
-      dbRef.on('value', (response) => {
-         console.log(response.val());
-         setWatchList(response.val())
-      })
-
-   }, [])
-
-
    const [events, setEvents] = useState([]);
    const [search, setSearch] = useState("");
 
-   const submitForm = (e) => {
+   const [activeList, setActiveList] = useState([]);
+   const [watchList, setWatchList] = useState([]);
+   const [userName, setUserName] = useState("Brandon");
+  
+   useEffect(() => {
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+
+      dbRef.on('value', (response) => {
+         const newState = []
+         const data = response.val()
+         console.log(data);
+
+         for (let key in data) {
+            newState.push({ key: key, name: data[key] })
+         }
+         console.log(newState);
+         setWatchList(newState);
+      })
+   }, [])
+
+   const removeListItem = (listId) => {
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+
+
+
+      dbRef.child(listId).remove();
+   }
+
+
+   function addToWatchList() {
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+      dbRef.push(search);
+   }
+
+   const submitForm = (e, searchTerm) => {
       e.preventDefault();
       // dbRef.push(search);
+      let searchWord = search;
+
+      if (searchTerm) {
+         searchWord = searchTerm;
+      }
+
+      console.log(searchWord);
 
       const ticketMasterUrl = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
       const ticketMasterKey = "LTtkh2NXZOyGcG6HGOASJH8KgZ4JiKGX"
-      const searchKeyword = "eagles";
 
       ticketMasterUrl.search = new URLSearchParams({
          apikey: ticketMasterKey,
-         keyword: search,
-         size: 20
+         keyword: searchWord,
+         size: 5
       })
 
       fetch(ticketMasterUrl)
@@ -93,7 +88,9 @@ function App() {
             filterEvents(jsonData);
          })
          .catch(data => {
-            console.log("not found")
+            filterEvents(data);
+            // setEvents([]);
+            console.log("not found");
          })
       setSearch("");
    };
@@ -102,70 +99,65 @@ function App() {
       setSearch(e.target.value);
    };
 
-   function addToWatchList() {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
 
-      console.log(watchList);
-
-      if (watchList) {
-         for (const list in watchList) {
-            console.log(search);
-            console.log(watchList);
-            console.log(watchList[list]);
-            if (search !== watchList[list]) {
-               dbRef.push(search);
-            }
-         }
-      } else {
-         dbRef.push(search);
-      }
-   }
 
    //in case we need to filter events (by price, selected image etc. before displaying on the page)
    function filterEvents(jsonData) {
-      const events = jsonData._embedded.events;
+      let events = [];
+
+      if (jsonData._embedded) {
+         events = jsonData._embedded.events;
+      }
+
       console.log(events);
 
-      setEvents(events.map(event => {
-         const name = event.name;
-         const date = event.dates.start.localDate;
+      const button = addToWatchList;
 
-         const venueName = event._embedded.venues[0].name;
-         const country = event._embedded.venues[0].country.countryCode;
-         const city = event._embedded.venues[0].city.name;
-         const button = addToWatchList;
+      if (events.length > 0) {
+         setEvents(events.map(event => {
+            const name = event.name;
+            const date = event.dates.start.localDate;
 
-         const venue = {
-            name: venueName,
-            city: city,
-            country: country
-         }
-         // const venue = `${venueName} ${city}, ${country}`;
+            const venueName = event._embedded.venues[0].name;
+            const country = event._embedded.venues[0].country.countryCode;
+            const city = event._embedded.venues[0].city.name;
 
-         // console.log(venue);
-         // console.log(event._embedded.venues[0]);
+            const key = event.id;
 
-         let price = {
-            min: 0,
-            max: 0
-         }
-
-         if (event.priceRanges) {
-            price = {
-               min: event.priceRanges[0].min,
-               max: event.priceRanges[0].max
+            const venue = {
+               name: venueName,
+               city: city,
+               country: country
             }
-         }
 
-         //update this to choose smallest image. Right now its just the first one
-         const image = event.images[0].url;
+            let price = {
+               min: 0,
+               max: 0
+            }
 
-         return ({ name, image, date, venue, price, button })
-      }));
+            if (event.priceRanges) {
+               price = {
+                  min: event.priceRanges[0].min,
+                  max: event.priceRanges[0].max
+               }
+            }
 
+            //update this to choose smallest image. Right now its just the first one
+            const image = event.images[0].url;
+
+            return ({ name, image, date, venue, price, button, key })
+         }));
+      } else {
+         const name = "No events found. Would you like to add to watch-list to search later?";
+         
+         const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
+         
+         const event = [{name, image, button}]
+         
+         setEvents(event);
+      }
    }
 
-   console.log(events)
 
    return (
       <div className="App">
@@ -173,6 +165,10 @@ function App() {
             submitForm={submitForm}
             value={search}
             searchQuery={searchQuery} />
+
+         <ol>
+            <WatchList saveList={watchList} remove={removeListItem} searchList={submitForm} />
+         </ol>
 
          <ul>
             <DisplayEvents
