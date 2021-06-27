@@ -30,8 +30,7 @@ function App() {
    const [activeList, setActiveList] = useState([]);
    const [watchList, setWatchList] = useState([]);
    const [userName, setUserName] = useState("Brandon");
-
-
+  
    useEffect(() => {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
 
@@ -170,8 +169,6 @@ function App() {
          <ol>
             <WatchList saveList={watchList} remove={removeListItem} searchList={submitForm} />
          </ol>
-
-
 
          <ul>
             <DisplayEvents
