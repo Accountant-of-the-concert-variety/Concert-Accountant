@@ -27,7 +27,6 @@ function App() {
    const [list, setList] = useState([]);
    const [watchList, setWatchList] = useState([]);
    const [userName, setUserName] = useState("Brandon");
-   
 
    useEffect(() => {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
