@@ -1,10 +1,10 @@
 function DisplayEvents({ events, displayType }) {
 
    const eventItems = events.map(event => {
-      const { name, image, date, venue, price, button } = event;
+      const { name, image, date, venue, price, button, key } = event;
 
       let displayItem =
-         <li className="event">
+         <li className="event" key = {key}>
             <p>{name}</p>
             <div className="image-container">
                <img src={image} alt={name} />
@@ -28,7 +28,7 @@ function DisplayEvents({ events, displayType }) {
       return (displayItem)
    })
 
-   console.log(eventItems);
+   // console.log(eventItems);
 
    return (
       <>
