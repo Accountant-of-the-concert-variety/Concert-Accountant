@@ -5,7 +5,7 @@ function WatchList (props) {
          saveList.map(list => {
             return (
             <li key = {list.key}>
-               <p onClick = { () => searchList(list.name)}>
+               <p onClick = { (e) => searchList(e, list.name)}>
                   {list.name}
                   <button onClick = { () => remove(list.key) }>
                      &times;
