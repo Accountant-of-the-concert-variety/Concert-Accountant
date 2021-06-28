@@ -3,16 +3,27 @@ function DisplayEvents({ events, displayType }) {
    const eventItems = events.map(event => {
       const { name, image, date, venue, price, button, key } = event;
 
+      const domName = <p>{name}</p>;
+      const domDate = <p>{date}</p>
+      const domImage = <img src={image} alt={name} />
+      let domPrice = null;
+
+      if (price) {
+         domPrice = <p>${price.min} - ${price.max}</p>
+         
+         if(price.min === price.max) {
+            domPrice = <p>${price.min}</p>
+         }
+      }
+
       let displayItem =
          <li className="event" key={key}>
             <div className="image-container">
                <img src={image} alt={name} />
             </div>
-            <p>{name}</p>
-            <p>{date}</p>
-
-            {/* //if min and max are the same, only show one */}
-            {!price ? null : <p>${price.min} - ${price.max}</p>}
+            {domName}
+            {domDate}
+            {domPrice}
 
             {!venue ? null :
                <div>

@@ -30,7 +30,7 @@ function App() {
    const [activeList, setActiveList] = useState([]);
    const [watchList, setWatchList] = useState([]);
    const [userName, setUserName] = useState("Brandon");
-  
+
    useEffect(() => {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
 
@@ -111,8 +111,6 @@ function App() {
 
       console.log(events);
 
-      const button = addToWatchList;
-
       if (events.length > 0) {
          setEvents(events.map(event => {
             const name = event.name;
@@ -121,7 +119,7 @@ function App() {
             const venueName = event._embedded.venues[0].name;
             const country = event._embedded.venues[0].country.countryCode;
             const city = event._embedded.venues[0].city.name;
-
+            const button = addToWatchList;
             const key = event.id;
 
             const venue = {
@@ -149,11 +147,11 @@ function App() {
          }));
       } else {
          const name = "No events found. Would you like to add to watch-list to search later?";
-         
+         const button = addToWatchList;
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
-         
-         const event = [{name, image, button}]
-         
+
+         const event = [{ name, image, button }]
+
          setEvents(event);
       }
    }
@@ -164,7 +162,8 @@ function App() {
          <Search
             submitForm={submitForm}
             value={search}
-            searchQuery={searchQuery} />
+            searchQuery={searchQuery}
+         />
 
          <ol>
             <WatchList saveList={watchList} remove={removeListItem} searchList={submitForm} />
