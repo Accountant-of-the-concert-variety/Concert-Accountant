@@ -22,7 +22,8 @@ function DisplayEvents({ events, displayType }) {
                </div>
             }
 
-            <button onClick={button}>Add to Watch List</button>
+
+            <button onClick={button}>Add to List</button>
          </li>
 
       // console.log(displayItem)
