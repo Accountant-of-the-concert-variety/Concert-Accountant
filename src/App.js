@@ -21,45 +21,70 @@ import './App.css';
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
+import UserList from './UserList';
 import firebase from './firebase';
+import { act } from 'react-dom/cjs/react-dom-test-utils.production.min';
 
 function App() {
    const [events, setEvents] = useState([]);
    const [search, setSearch] = useState("");
 
-   const [activeList, setActiveList] = useState([]);
+   const [activeList, setActiveList] = useState('LA');
    const [watchList, setWatchList] = useState([]);
-   const [userName, setUserName] = useState("Brandon");
-  
+
+   const [userName, setUserName] = useState("");
+   const [userNameTemplate, setUserNameTemplate] =  useState("")
+
+   console.log(userName)
+
+   const userNameInput = (e) => {
+      e.preventDefault();
+      // const newName = e.target.value
+      // setUserName(newName)
+      setUserNameTemplate(e.target.value)
+   }
+
+   const setUserNameButton = (e) => {
+      e.preventDefault();
+      setUserName(userNameTemplate)
+      console.log(userNameTemplate)
+   } 
+
    useEffect(() => {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`);
 
       dbRef.on('value', (response) => {
          const newState = []
          const data = response.val()
-         console.log(data);
+         // console.log(data);
 
          for (let key in data) {
             newState.push({ key: key, name: data[key] })
          }
-         console.log(newState);
+         // console.log(newState);
          setWatchList(newState);
+         setUserName(newState)
       })
    }, [])
 
    const removeListItem = (listId) => {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
-
-
-
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`);
       dbRef.child(listId).remove();
    }
 
+   function addToActiveList() {
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`)
+      dbRef.push(search)
+      console.log(search)
+   }
 
    function addToWatchList() {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
       dbRef.push(search);
    }
+
+
+
 
    const submitForm = (e, searchTerm) => {
       e.preventDefault();
@@ -69,8 +94,7 @@ function App() {
       if (searchTerm) {
          searchWord = searchTerm;
       }
-
-      console.log(searchWord);
+      // console.log(searchWord);
 
       const ticketMasterUrl = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
       const ticketMasterKey = "LTtkh2NXZOyGcG6HGOASJH8KgZ4JiKGX"
@@ -99,6 +123,8 @@ function App() {
       setSearch(e.target.value);
    };
 
+   
+
 
 
    //in case we need to filter events (by price, selected image etc. before displaying on the page)
@@ -108,10 +134,9 @@ function App() {
       if (jsonData._embedded) {
          events = jsonData._embedded.events;
       }
+      // console.log(events);
 
-      console.log(events);
-
-      const button = addToWatchList;
+     
 
       if (events.length > 0) {
          setEvents(events.map(event => {
@@ -124,6 +149,7 @@ function App() {
 
             const key = event.id;
 
+            const button = addToActiveList
             const venue = {
                name: venueName,
                city: city,
@@ -145,9 +171,10 @@ function App() {
             //update this to choose smallest image. Right now its just the first one
             const image = event.images[0].url;
 
-            return ({ name, image, date, venue, price, button, key })
+            return ({ name, image, date, venue, price, key, button })
          }));
       } else {
+         const button = addToWatchList;
          const name = "No events found. Would you like to add to watch-list to search later?";
          
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
@@ -166,8 +193,19 @@ function App() {
             value={search}
             searchQuery={searchQuery} />
 
+
+            <UserList 
+               userNameInput = {userNameInput}
+               userNameTemplate = {userNameTemplate}
+               button = {setUserNameButton}
+               />
+               
+
          <ol>
-            <WatchList saveList={watchList} remove={removeListItem} searchList={submitForm} />
+            <WatchList 
+               saveList={watchList}
+               remove={removeListItem}
+               searchList={submitForm} />
          </ol>
 
          <ul>
