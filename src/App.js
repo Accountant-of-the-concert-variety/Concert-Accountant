@@ -22,7 +22,8 @@ import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
-import UserList from './UserList';
+import UserNameForm from './UserList';
+import AddLists from './AddLists';
 import firebase from './firebase';
 
 function App() {
@@ -34,12 +35,14 @@ function App() {
    const [activeListItems, setActiveListItems] = useState([]);
 
    const [watchList, setWatchList] = useState([]);
+   const [createList, setCreateList] = useState("");
 
    const [userName, setUserName] = useState("Brandon");
    const [userNameTemplate, setUserNameTemplate] = useState("")
    const [userLists, setUserLists] = useState([]);
 
    console.log("search = " + search);
+   console.log(userName);
 
    const userNameInput = (e) => {
       e.preventDefault();
@@ -47,7 +50,10 @@ function App() {
    }
 
    const setUserNameButton = (e) => {
-      e.preventDefault();
+      if (e) {
+         e.preventDefault();
+      }
+
       setUserName(userNameTemplate);
 
       console.log("setting userName to " + userNameTemplate);
@@ -116,7 +122,7 @@ function App() {
    }
 
    function addToActiveList(listItem) {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/${listItem.name}`);
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`);
       dbRef.set(listItem)
       console.log(listItem);
 
@@ -244,6 +250,26 @@ function App() {
       })
    }, [])
 
+   const submitList = (e) => {
+      e.preventDefault();
+      setActiveList(createList);
+      //    const dbRef = firebase.database().ref(`${userName}`);
+      //    dbRef.on('value', (response) => {
+      //        const listState = []
+      //        const data = response.val();
+      //        for (let key in data) {
+      //            listState.push({key: key, name:data[key]})
+      //        }
+      //        setActiveList(listState);
+      //    })
+   }
+
+   const onChange = (e) => {
+      e.preventDefault();
+      console.log(e.target.value)
+      setCreateList(e.target.value);
+   }
+
 
    return (
       <Router>
@@ -254,20 +280,35 @@ function App() {
                searchQuery={searchQuery}
             />
 
-            <UserList
+            <UserNameForm
                userNameInput={userNameInput}
                userNameTemplate={userNameTemplate}
                button={setUserNameButton}
             />
 
+            <AddLists
+               value={createList}
+               submitList={submitList}
+               onChange={onChange}
+            />
+
             <div>
                <ul>
-                  {userLists.map(name => {
+                  {userLists.map((name) => {
                      return (
                         <li key={name.key}>
-                           <p>{name.key}</p>
+                           <p
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 // setUserName(`${name.key}`);
+                                 setUserNameTemplate(`${name.key}`);
+                                 setUserNameButton();
+                              }}
+                           >
+                              {name.key}
+                           </p>
                         </li>
-                     )
+                     );
                   })}
                </ul>
             </div>
@@ -291,7 +332,7 @@ function App() {
                   usersLists.map(list => {
                      return (
                         <li>
-                           <button onClick={() => {changeActiveList(list)}}>
+                           <button onClick={() => { changeActiveList(list) }}>
                               <Link to="/list">{list}</Link>
                            </button>
                         </li>
@@ -317,7 +358,7 @@ function App() {
             </ul>
          </div>
       </Router>
-   )
+   );
 }
 
 export default App;
