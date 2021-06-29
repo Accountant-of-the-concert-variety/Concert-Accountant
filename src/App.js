@@ -22,8 +22,8 @@ import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
 import UserList from './UserList';
+// import Lists from './Lists';
 import firebase from './firebase';
-import { act } from 'react-dom/cjs/react-dom-test-utils.production.min';
 
 function App() {
    const [events, setEvents] = useState([]);
@@ -31,6 +31,8 @@ function App() {
 
    const [activeList, setActiveList] = useState('LA');
    const [watchList, setWatchList] = useState([]);
+
+   const [userLists, setUserLists] = useState([]);
 
    const [userName, setUserName] = useState("");
    const [userNameTemplate, setUserNameTemplate] =  useState("")
@@ -47,25 +49,27 @@ function App() {
    const setUserNameButton = (e) => {
       e.preventDefault();
       setUserName(userNameTemplate)
+      // setUserLists(userNameTemplate);
       console.log(userNameTemplate)
-   } 
 
-   useEffect(() => {
       const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`);
 
-      dbRef.on('value', (response) => {
-         const newState = []
-         const data = response.val()
-         // console.log(data);
+      dbRef.on("value", (response) => {
+        const newState = [];
+        const data = response.val();
+        // console.log(data);
 
-         for (let key in data) {
-            newState.push({ key: key, name: data[key] })
-         }
-         // console.log(newState);
-         setWatchList(newState);
-         setUserName(newState)
-      })
-   }, [])
+        for (let key in data) {
+          newState.push({ key: key, name: data[key] });
+        }
+        // console.log(newState);
+        setWatchList(newState);
+
+      });
+
+   } 
+
+
 
    const removeListItem = (listId) => {
       const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`);
@@ -185,36 +189,57 @@ function App() {
       }
    }
 
+   useEffect(() => {
+      const dbRef = firebase.database().ref();
+      dbRef.on('value', ( response ) => {
+         const nameState = []
+         const data = response.val();
+         for (let key in data) {
+            nameState.push({key: key, name: data[key]})
+         }
+         setUserLists(nameState);
+         console.log(userLists)
+      })
+   }, [])
 
    return (
-      <div className="App">
-         <Search
-            submitForm={submitForm}
-            value={search}
-            searchQuery={searchQuery} />
+     <div className="App">
+       <Search
+         submitForm={submitForm}
+         value={search}
+         searchQuery={searchQuery}
+       />
 
+       <UserList
+         userNameInput={userNameInput}
+         userNameTemplate={userNameTemplate}
+         button={setUserNameButton}
+       />
 
-            <UserList 
-               userNameInput = {userNameInput}
-               userNameTemplate = {userNameTemplate}
-               button = {setUserNameButton}
-               />
-               
+       <div>
+          <ul>
+             {userLists.map(name => {
+                return (
+                   <li key={name.key}>
+                      <p>{name.key}</p>
+                   </li>
+                )
+             })}
+          </ul>
+       </div>
 
-         <ol>
-            <WatchList 
-               saveList={watchList}
-               remove={removeListItem}
-               searchList={submitForm} />
-         </ol>
+       <ol>
+         <WatchList
+           saveList={watchList}
+           remove={removeListItem}
+           searchList={submitForm}
+         />
+       </ol>
 
-         <ul>
-            <DisplayEvents
-               events={events}
-               displayType="searchResults"
-            />
-         </ul>
-      </div>
+       <ul>
+         <DisplayEvents events={events} displayType="searchResults" />
+       </ul>
+     </div>
    );
 }
 
