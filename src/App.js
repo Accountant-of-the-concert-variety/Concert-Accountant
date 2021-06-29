@@ -18,11 +18,11 @@
 
 import './App.css';
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
-import UserList from './UserList';
+import UserNameForm from './UserList';
 import AddLists from './AddLists';
 import firebase from './firebase';
 
@@ -31,7 +31,7 @@ function App() {
    const [search, setSearch] = useState("");
 
    const [usersLists, setUsersLists] = useState([]);
-   const [activeList, setActiveList] = useState('');
+   const [activeList, setActiveList] = useState('New York');
    const [activeListItems, setActiveListItems] = useState([]);
 
    const [watchList, setWatchList] = useState([]);
@@ -50,7 +50,10 @@ function App() {
    }
 
    const setUserNameButton = (e) => {
-      e.preventDefault();
+      if (e) {
+         e.preventDefault();
+      }
+
       setUserName(userNameTemplate);
 
       console.log("setting userName to " + userNameTemplate);
@@ -103,13 +106,23 @@ function App() {
       });
    }
 
+   useEffect(() => {
+      updateUserLists(activeList);
+   }, [activeList])
+
    const removeListItem = (listId) => {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
       dbRef.child(listId).remove();
    }
 
+   function changeActiveList(list) {
+      console.log(list);
+      setActiveList(list);
+      updateUserLists(list)
+   }
+
    function addToActiveList(listItem) {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/${listItem.name}`);
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`);
       dbRef.set(listItem)
       console.log(listItem);
 
@@ -224,11 +237,6 @@ function App() {
       }
    }
 
-   // const button = {
-   //    button: addToActiveList,
-   //    text: `Add to ${activeList} list`
-   // }
-
    useEffect(() => {
       const dbRef = firebase.database().ref();
       dbRef.on('value', (response) => {
@@ -243,88 +251,113 @@ function App() {
    }, [])
 
    const submitList = (e) => {
-       e.preventDefault();
-       setActiveList(createList);
-    //    const dbRef = firebase.database().ref(`${userName}`);
-    //    dbRef.on('value', (response) => {
-    //        const listState = []
-    //        const data = response.val();
-    //        for (let key in data) {
-    //            listState.push({key: key, name:data[key]})
-    //        }
-    //        setActiveList(listState);
-    //    })
+      e.preventDefault();
+      setActiveList(createList);
+      //    const dbRef = firebase.database().ref(`${userName}`);
+      //    dbRef.on('value', (response) => {
+      //        const listState = []
+      //        const data = response.val();
+      //        for (let key in data) {
+      //            listState.push({key: key, name:data[key]})
+      //        }
+      //        setActiveList(listState);
+      //    })
    }
 
    const onChange = (e) => {
-       e.preventDefault();
-       console.log(e.target.value)
-       setCreateList(e.target.value);
+      e.preventDefault();
+      console.log(e.target.value)
+      setCreateList(e.target.value);
    }
 
 
    return (
-     <Router>
-       <div className="App">
-         <Search
-           submitForm={submitForm}
-           value={search}
-           searchQuery={searchQuery}
-         />
+      <Router>
+         <div className="App">
+            <Search
+               submitForm={submitForm}
+               value={search}
+               searchQuery={searchQuery}
+            />
 
-         <UserList
-           userNameInput={userNameInput}
-           userNameTemplate={userNameTemplate}
-           button={setUserNameButton}
-         />
+            <UserNameForm
+               userNameInput={userNameInput}
+               userNameTemplate={userNameTemplate}
+               button={setUserNameButton}
+            />
 
-         <AddLists 
-         value={createList}
-         submitList={submitList}
-         onChange={onChange}
-         />
+            <AddLists
+               value={createList}
+               submitList={submitList}
+               onChange={onChange}
+            />
 
-         <div>
-           <ul>
-             {userLists.map((name) => {
-               return (
-                 <li key={name.key}>
-                   <p
-                     onClick={(e) => {
-                       e.preventDefault();
-                       setUserName(`${name.key}`);
-                     }}
-                   >
-                     {name.key}
-                   </p>
-                 </li>
-               );
-             })}
-           </ul>
+            <div>
+               <ul>
+                  {userLists.map((name) => {
+                     return (
+                        <li key={name.key}>
+                           <p
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 // setUserName(`${name.key}`);
+                                 setUserNameTemplate(`${name.key}`);
+                                 setUserNameButton();
+                              }}
+                           >
+                              {name.key}
+                           </p>
+                        </li>
+                     );
+                  })}
+               </ul>
+            </div>
+
+            <ol>
+               <WatchList
+                  saveList={watchList}
+                  remove={removeListItem}
+                  searchList={submitForm} />
+            </ol>
+
+            {/* <ul>
+               <DisplayEvents
+                  events={activeListItems}
+                  displayType="listItems"
+               />
+            </ul> */}
+
+            <ul>
+               {
+                  usersLists.map(list => {
+                     return (
+                        <li>
+                           <button onClick={() => { changeActiveList(list) }}>
+                              <Link to="/list">{list}</Link>
+                           </button>
+                        </li>
+                     )
+                  })
+               }
+            </ul>
+
+            <Route exact path="/list">
+               <DisplayEvents
+                  events={activeListItems}
+                  displayType="listItems"
+               />
+            </Route>
+
+            <ul>
+               <DisplayEvents
+                  events={events}
+                  displayType="searchResults"
+                  activeList={activeList}
+                  button={{ addToActiveList, addToWatchList }}
+               />
+            </ul>
          </div>
-
-         <ol>
-           <WatchList
-             saveList={watchList}
-             remove={removeListItem}
-             searchList={submitForm}
-           />
-         </ol>
-
-         <ul>
-           <DisplayEvents events={activeListItems} displayType="listItems" />
-         </ul>
-
-         <ul>
-           <DisplayEvents
-             events={events}
-             displayType="searchResults"
-             activeList={activeList}
-             button={{ addToActiveList, addToWatchList }}
-           />
-         </ul>
-       </div>
-     </Router>
+      </Router>
    );
 }
 
