@@ -16,28 +16,30 @@
 
 // On all the events displayed, have a button for each event where you can add it to the list
 
-import { useEffect, useState } from 'react';
 import './App.css';
+import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
 import UserList from './UserList';
-// import Lists from './Lists';
 import firebase from './firebase';
 
 function App() {
    const [events, setEvents] = useState([]);
    const [search, setSearch] = useState("");
 
+   const [usersLists, setUsersLists] = useState([]);
    const [activeList, setActiveList] = useState('LA');
    const [activeListItems, setActiveListItems] = useState([]);
+
    const [watchList, setWatchList] = useState([]);
 
    const [userName, setUserName] = useState("Brandon");
    const [userNameTemplate, setUserNameTemplate] = useState("")
    const [userLists, setUserLists] = useState([]);
 
-   console.log(userName)
+   console.log("search = " + search);
 
    const userNameInput = (e) => {
       e.preventDefault();
@@ -50,21 +52,52 @@ function App() {
 
       console.log("setting userName to " + userNameTemplate);
 
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/watchList`);
+      createLists();
+   }
+
+   const createLists = () => {
+      console.log(userNameTemplate);
+      const dbRef = firebase.database().ref(`${userNameTemplate}/lists`);
+      setWatchList([]);
+      setActiveListItems([]);
+
+      dbRef.on("value", response => {
+         let lists = [];
+
+         for (const list in response.val()) {
+            if (list != "watchList") {
+               lists.push(list);
+            }
+            updateUserLists(list);
+         }
+
+         setUsersLists(lists);
+      })
+   }
+
+   function updateUserLists(list) {
+      console.log(list);
+      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}`);
 
       dbRef.on("value", (response) => {
          const newState = [];
          const data = response.val();
-         // console.log(data);
 
-         for (let key in data) {
-            newState.push({ key: key, name: data[key] });
+         if (list === "watchList") {
+            for (let key in data) {
+               newState.push({ key: key, name: data[key] });
+            }
+
+            setWatchList(newState);
+
+         } else if (list === activeList) {
+            for (const key in data) {
+               newState.push(data[key])
+            }
+
+            setActiveListItems(newState);
          }
-         // console.log(newState);
-         setWatchList(newState);
-
       });
-
    }
 
    const removeListItem = (listId) => {
@@ -77,14 +110,13 @@ function App() {
       dbRef.set(listItem)
       console.log(listItem);
 
-      setActiveListItems([...activeListItems, listItem])
+      // setActiveListItems([...activeListItems, listItem])
    }
 
    function addToWatchList() {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
       dbRef.push(search);
    }
-   console.log(search);
 
    const searchQuery = (e) => {
       setSearch(e.target.value);
@@ -133,7 +165,8 @@ function App() {
       }
 
       if (events.length > 0) {
-         setEvents(events.map(event => {
+         const eventList = (events.map(event => {
+            const type = "event"
             const name = event.name;
             const date = event.dates.start.localDate;
 
@@ -168,8 +201,10 @@ function App() {
             //update this to choose smallest image. Right now its just the first one
             const image = event.images[0].url;
 
-            return ({ name, image, date, venue, price, key })
+            return ({ type, name, image, date, venue, price, key })
          }));
+
+         setEvents(eventList);
       } else {
          const name = "No events found. Would you like to add to watch-list to search later?";
 
@@ -200,60 +235,62 @@ function App() {
             nameState.push({ key: key, name: data[key] })
          }
          setUserLists(nameState);
-         console.log(userLists)
+         // console.log(userLists)
       })
    }, [])
 
 
    return (
-      <div className="App">
-         <Search
-            submitForm={submitForm}
-            value={search}
-            searchQuery={searchQuery}
-         />
+      <Router>
+         <div className="App">
+            <Search
+               submitForm={submitForm}
+               value={search}
+               searchQuery={searchQuery}
+            />
 
-         <UserList
-            userNameInput={userNameInput}
-            userNameTemplate={userNameTemplate}
-            button={setUserNameButton}
-         />
+            <UserList
+               userNameInput={userNameInput}
+               userNameTemplate={userNameTemplate}
+               button={setUserNameButton}
+            />
 
-         <div>
+            <div>
+               <ul>
+                  {userLists.map(name => {
+                     return (
+                        <li key={name.key}>
+                           <p>{name.key}</p>
+                        </li>
+                     )
+                  })}
+               </ul>
+            </div>
+
+            <ol>
+               <WatchList
+                  saveList={watchList}
+                  remove={removeListItem}
+                  searchList={submitForm} />
+            </ol>
+
             <ul>
-               {userLists.map(name => {
-                  return (
-                     <li key={name.key}>
-                        <p>{name.key}</p>
-                     </li>
-                  )
-               })}
+               <DisplayEvents
+                  events={activeListItems}
+                  displayType="listItems"
+               />
+            </ul>
+
+            <ul>
+               <DisplayEvents
+                  events={events}
+                  displayType="searchResults"
+                  activeList={activeList}
+                  button={{ addToActiveList, addToWatchList }}
+               />
             </ul>
          </div>
-
-         <ol>
-            <WatchList
-               saveList={watchList}
-               remove={removeListItem}
-               searchList={submitForm} />
-         </ol>
-
-         <ul>
-            <DisplayEvents
-               events={activeListItems}
-               displayType="listItems"
-            />
-         </ul>
-
-         <ul>
-            <DisplayEvents
-               events={events}
-               displayType="searchResults"
-               activeList={activeList}
-               button={{ addToActiveList, addToWatchList }}
-            />
-         </ul>
-      </div>
+      </Router>
    )
 }
 
