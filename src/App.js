@@ -30,65 +30,65 @@ function App() {
    const [search, setSearch] = useState("");
 
    const [activeList, setActiveList] = useState('LA');
-   const [activeListItems, setActiveListItems] = useState([]);
    const [watchList, setWatchList] = useState([]);
 
-   const [userName, setUserName] = useState("Brandon");
-   const [userNameTemplate, setUserNameTemplate] = useState("")
    const [userLists, setUserLists] = useState([]);
+
+   const [userName, setUserName] = useState("");
+   const [userNameTemplate, setUserNameTemplate] =  useState("")
 
    console.log(userName)
 
    const userNameInput = (e) => {
       e.preventDefault();
+      // const newName = e.target.value
+      // setUserName(newName)
       setUserNameTemplate(e.target.value)
    }
 
    const setUserNameButton = (e) => {
       e.preventDefault();
-      setUserName(userNameTemplate);
+      setUserName(userNameTemplate)
+      // setUserLists(userNameTemplate);
+      console.log(userNameTemplate)
 
-      console.log("setting userName to " + userNameTemplate);
-
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/watchList`);
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`);
 
       dbRef.on("value", (response) => {
-         const newState = [];
-         const data = response.val();
-         // console.log(data);
+        const newState = [];
+        const data = response.val();
+        // console.log(data);
 
-         for (let key in data) {
-            newState.push({ key: key, name: data[key] });
-         }
-         // console.log(newState);
-         setWatchList(newState);
+        for (let key in data) {
+          newState.push({ key: key, name: data[key] });
+        }
+        // console.log(newState);
+        setWatchList(newState);
 
       });
 
-   }
+   } 
+
+
 
    const removeListItem = (listId) => {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`);
       dbRef.child(listId).remove();
    }
 
-   function addToActiveList(listItem) {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/${listItem.name}`);
-      dbRef.set(listItem)
-      console.log(listItem);
-
-      setActiveListItems([...activeListItems, listItem])
+   function addToActiveList() {
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`)
+      dbRef.push(search)
+      console.log(search)
    }
 
    function addToWatchList() {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
       dbRef.push(search);
    }
-   console.log(search);
 
-   const searchQuery = (e) => {
-      setSearch(e.target.value);
-   };
+
+
 
    const submitForm = (e, searchTerm) => {
       e.preventDefault();
@@ -96,7 +96,6 @@ function App() {
       let searchWord = search;
 
       if (searchTerm) {
-         setSearch(searchTerm);
          searchWord = searchTerm;
       }
       // console.log(searchWord);
@@ -121,8 +120,16 @@ function App() {
             // setEvents([]);
             console.log("not found");
          })
-      // setSearch("");
+      setSearch("");
    };
+
+   const searchQuery = (e) => {
+      setSearch(e.target.value);
+   };
+
+   
+
+
 
    //in case we need to filter events (by price, selected image etc. before displaying on the page)
    function filterEvents(jsonData) {
@@ -131,6 +138,9 @@ function App() {
       if (jsonData._embedded) {
          events = jsonData._embedded.events;
       }
+      // console.log(events);
+
+     
 
       if (events.length > 0) {
          setEvents(events.map(event => {
@@ -140,13 +150,10 @@ function App() {
             const venueName = event._embedded.venues[0].name;
             const country = event._embedded.venues[0].country.countryCode;
             const city = event._embedded.venues[0].city.name;
-            // const button = {
-            //    button: addToActiveList,
-            //    text: `Add to ${activeList} list`
-            // }
 
-            const key = `${userName + event.id}`;
+            const key = event.id;
 
+            const button = addToActiveList
             const venue = {
                name: venueName,
                city: city,
@@ -168,93 +175,78 @@ function App() {
             //update this to choose smallest image. Right now its just the first one
             const image = event.images[0].url;
 
-            return ({ name, image, date, venue, price, key })
+            return ({ name, image, date, venue, price, key, button })
          }));
       } else {
+         const button = addToWatchList;
          const name = "No events found. Would you like to add to watch-list to search later?";
-
-         // const button = {
-         //    button: addToWatchList,
-         //    text: `Add to watch list`
-         // }
-
+         
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
-
-         const event = [{ name, image }]
-
+         
+         const event = [{name, image, button}]
+         
          setEvents(event);
       }
    }
 
-   // const button = {
-   //    button: addToActiveList,
-   //    text: `Add to ${activeList} list`
-   // }
-
    useEffect(() => {
       const dbRef = firebase.database().ref();
-      dbRef.on('value', (response) => {
+      dbRef.on('value', ( response ) => {
          const nameState = []
          const data = response.val();
          for (let key in data) {
-            nameState.push({ key: key, name: data[key] })
+            nameState.push({key: key, name: data[key]})
          }
          setUserLists(nameState);
          console.log(userLists)
       })
    }, [])
 
-
    return (
-      <div className="App">
-         <Search
-            submitForm={submitForm}
-            value={search}
-            searchQuery={searchQuery}
+     <div className="App">
+       <Search
+         submitForm={submitForm}
+         value={search}
+         searchQuery={searchQuery}
+       />
+
+       <UserList
+         userNameInput={userNameInput}
+         userNameTemplate={userNameTemplate}
+         button={setUserNameButton}
+       />
+
+       <div>
+          <ul>
+             {userLists.map(name => {
+                return (
+                   <li key={name.key} onClick={() => {
+                      <ol>
+                        <WatchList
+                          saveList={watchList}
+                        />
+                      </ol>;
+                   }}>
+                      <p>{name.key}</p>
+                   </li>
+                )
+             })}
+          </ul>
+       </div>
+
+       <ol>
+         <WatchList
+           saveList={watchList}
+           remove={removeListItem}
+           searchList={submitForm}
          />
+       </ol>
 
-         <UserList
-            userNameInput={userNameInput}
-            userNameTemplate={userNameTemplate}
-            button={setUserNameButton}
-         />
-
-         <div>
-            <ul>
-               {userLists.map(name => {
-                  return (
-                     <li key={name.key}>
-                        <p>{name.key}</p>
-                     </li>
-                  )
-               })}
-            </ul>
-         </div>
-
-         <ol>
-            <WatchList
-               saveList={watchList}
-               remove={removeListItem}
-               searchList={submitForm} />
-         </ol>
-
-         <ul>
-            <DisplayEvents
-               events={activeListItems}
-               displayType="listItems"
-            />
-         </ul>
-
-         <ul>
-            <DisplayEvents
-               events={events}
-               displayType="searchResults"
-               activeList={activeList}
-               button={{ addToActiveList, addToWatchList }}
-            />
-         </ul>
-      </div>
-   )
+       <ul>
+         <DisplayEvents events={events} displayType="searchResults" />
+       </ul>
+     </div>
+   );
 }
 
 export default App;
