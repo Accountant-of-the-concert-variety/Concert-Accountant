@@ -22,21 +22,23 @@ import DisplayEvents from "./DisplayEvents";
 import Search from "./Search";
 import WatchList from "./WatchList";
 import UserList from "./UserList";
-// import Lists from './Lists';
+import CreateLists from "./CreateLists";
 import firebase from "./firebase";
 
 function App() {
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState("");
 
-  const [activeList, setActiveList] = useState("LA");
+  const [activeList, setActiveList] = useState("Chicago");
   const [activeListItems, setActiveListItems] = useState([]);
   const [watchList, setWatchList] = useState([]);
 
-  const [userName, setUserName] = useState("Brandon");
+  const [userName, setUserName] = useState("");
   const [userNameTemplate, setUserNameTemplate] = useState("");
   const [userLists, setUserLists] = useState([]);
 
+
+ 
   console.log(userName);
 
   const userNameInput = (e) => {
@@ -64,6 +66,7 @@ function App() {
       }
       // console.log(newState);
       setWatchList(newState);
+      // dbRef.push(userNameInput)
     });
   };
 
@@ -86,7 +89,6 @@ function App() {
     const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
     dbRef.push(search);
   }
-  console.log(search);
 
   const searchQuery = (e) => {
     setSearch(e.target.value);
@@ -213,6 +215,22 @@ function App() {
     });
   }, []);
 
+
+
+
+
+
+
+
+
+   const newList = (e) => {
+     activeList(e.target.value);
+         const dbRef = firebase.database().ref();
+         dbRef.push(newList);
+     setActiveList(newList);
+   };
+
+
   return (
     <div className="App">
       <Search
@@ -220,19 +238,33 @@ function App() {
         value={search}
         searchQuery={searchQuery}
       />
-
       <UserList
         userNameInput={userNameInput}
         userNameTemplate={userNameTemplate}
         button={setUserNameButton}
       />
 
+      <CreateLists
+      // submitForm={submitList}
+      value={activeList} 
+      createList={newList}/>
+
+     
+
+
       <div>
         <ul>
           {userLists.map((name) => {
             return (
               <li key={name.key}>
-                <p>{name.key}</p>
+                <p
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setUserName(`${name.key}`);
+                  }}
+                >
+                  {name.key}
+                </p>
               </li>
             );
           })}
@@ -240,6 +272,7 @@ function App() {
       </div>
 
       <ol>
+        <p>Your watchlist</p>
         <WatchList
           saveList={watchList}
           remove={removeListItem}
@@ -248,6 +281,10 @@ function App() {
       </ol>
 
       <ul>
+        <p onClick={(e) => {
+           e.preventDefault();
+         //   setActiveList(`${}`)
+        }}>Your activelists</p>
         <DisplayEvents events={activeListItems} displayType="listItems" />
       </ul>
 
