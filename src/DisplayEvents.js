@@ -2,7 +2,7 @@ function DisplayEvents({ events, displayType, activeList, button }) {
    const domButton = {};
 
    const eventItems = events.map(event => {
-      const { name, image, date, venue, price, key } = event;
+      const { type, name, image, date, venue, price, key } = event;
 
       const eventName = <p>{name}</p>;
       const eventDate = <p>{date}</p>
@@ -37,8 +37,8 @@ function DisplayEvents({ events, displayType, activeList, button }) {
       let displayItem = {};
 
       if (displayType === "searchResults") {
-         
-         if (events.length > 1) {
+
+         if (type === "event") {
             domButton.button = button.addToActiveList;
             domButton.text = `Add to ${activeList} list`
             console.log('adding to my list')
@@ -78,12 +78,8 @@ function DisplayEvents({ events, displayType, activeList, button }) {
             </li >
       }
 
-      // console.log(displayItem)
-
       return (displayItem)
    })
-
-   // console.log(eventItems);
 
    return (
       <>
