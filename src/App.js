@@ -23,6 +23,7 @@ import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
 import UserList from './UserList';
+import AddLists from './AddLists';
 import firebase from './firebase';
 
 function App() {
@@ -30,16 +31,18 @@ function App() {
    const [search, setSearch] = useState("");
 
    const [usersLists, setUsersLists] = useState([]);
-   const [activeList, setActiveList] = useState('LA');
+   const [activeList, setActiveList] = useState('');
    const [activeListItems, setActiveListItems] = useState([]);
 
    const [watchList, setWatchList] = useState([]);
+   const [createList, setCreateList] = useState("");
 
    const [userName, setUserName] = useState("Brandon");
    const [userNameTemplate, setUserNameTemplate] = useState("")
    const [userLists, setUserLists] = useState([]);
 
    console.log("search = " + search);
+   console.log(userName);
 
    const userNameInput = (e) => {
       e.preventDefault();
@@ -239,59 +242,90 @@ function App() {
       })
    }, [])
 
+   const submitList = (e) => {
+       e.preventDefault();
+       setActiveList(createList);
+    //    const dbRef = firebase.database().ref(`${userName}`);
+    //    dbRef.on('value', (response) => {
+    //        const listState = []
+    //        const data = response.val();
+    //        for (let key in data) {
+    //            listState.push({key: key, name:data[key]})
+    //        }
+    //        setActiveList(listState);
+    //    })
+   }
+
+   const onChange = (e) => {
+       e.preventDefault();
+       console.log(e.target.value)
+       setCreateList(e.target.value);
+   }
+
 
    return (
-      <Router>
-         <div className="App">
-            <Search
-               submitForm={submitForm}
-               value={search}
-               searchQuery={searchQuery}
-            />
+     <Router>
+       <div className="App">
+         <Search
+           submitForm={submitForm}
+           value={search}
+           searchQuery={searchQuery}
+         />
 
-            <UserList
-               userNameInput={userNameInput}
-               userNameTemplate={userNameTemplate}
-               button={setUserNameButton}
-            />
+         <UserList
+           userNameInput={userNameInput}
+           userNameTemplate={userNameTemplate}
+           button={setUserNameButton}
+         />
 
-            <div>
-               <ul>
-                  {userLists.map(name => {
-                     return (
-                        <li key={name.key}>
-                           <p>{name.key}</p>
-                        </li>
-                     )
-                  })}
-               </ul>
-            </div>
+         <AddLists 
+         value={createList}
+         submitList={submitList}
+         onChange={onChange}
+         />
 
-            <ol>
-               <WatchList
-                  saveList={watchList}
-                  remove={removeListItem}
-                  searchList={submitForm} />
-            </ol>
-
-            <ul>
-               <DisplayEvents
-                  events={activeListItems}
-                  displayType="listItems"
-               />
-            </ul>
-
-            <ul>
-               <DisplayEvents
-                  events={events}
-                  displayType="searchResults"
-                  activeList={activeList}
-                  button={{ addToActiveList, addToWatchList }}
-               />
-            </ul>
+         <div>
+           <ul>
+             {userLists.map((name) => {
+               return (
+                 <li key={name.key}>
+                   <p
+                     onClick={(e) => {
+                       e.preventDefault();
+                       setUserName(`${name.key}`);
+                     }}
+                   >
+                     {name.key}
+                   </p>
+                 </li>
+               );
+             })}
+           </ul>
          </div>
-      </Router>
-   )
+
+         <ol>
+           <WatchList
+             saveList={watchList}
+             remove={removeListItem}
+             searchList={submitForm}
+           />
+         </ol>
+
+         <ul>
+           <DisplayEvents events={activeListItems} displayType="listItems" />
+         </ul>
+
+         <ul>
+           <DisplayEvents
+             events={events}
+             displayType="searchResults"
+             activeList={activeList}
+             button={{ addToActiveList, addToWatchList }}
+           />
+         </ul>
+       </div>
+     </Router>
+   );
 }
 
 export default App;
