@@ -18,7 +18,7 @@
 
 import './App.css';
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
@@ -30,7 +30,7 @@ function App() {
    const [search, setSearch] = useState("");
 
    const [usersLists, setUsersLists] = useState([]);
-   const [activeList, setActiveList] = useState('LA');
+   const [activeList, setActiveList] = useState('New York');
    const [activeListItems, setActiveListItems] = useState([]);
 
    const [watchList, setWatchList] = useState([]);
@@ -100,9 +100,19 @@ function App() {
       });
    }
 
+   useEffect(() => {
+      updateUserLists(activeList);
+   }, [activeList])
+
    const removeListItem = (listId) => {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
       dbRef.child(listId).remove();
+   }
+
+   function changeActiveList(list) {
+      console.log(list);
+      setActiveList(list);
+      updateUserLists(list)
    }
 
    function addToActiveList(listItem) {
@@ -221,11 +231,6 @@ function App() {
       }
    }
 
-   // const button = {
-   //    button: addToActiveList,
-   //    text: `Add to ${activeList} list`
-   // }
-
    useEffect(() => {
       const dbRef = firebase.database().ref();
       dbRef.on('value', (response) => {
@@ -274,12 +279,33 @@ function App() {
                   searchList={submitForm} />
             </ol>
 
-            <ul>
+            {/* <ul>
                <DisplayEvents
                   events={activeListItems}
                   displayType="listItems"
                />
+            </ul> */}
+
+            <ul>
+               {
+                  usersLists.map(list => {
+                     return (
+                        <li>
+                           <button onClick={() => {changeActiveList(list)}}>
+                              <Link to="/list">{list}</Link>
+                           </button>
+                        </li>
+                     )
+                  })
+               }
             </ul>
+
+            <Route exact path="/list">
+               <DisplayEvents
+                  events={activeListItems}
+                  displayType="listItems"
+               />
+            </Route>
 
             <ul>
                <DisplayEvents
