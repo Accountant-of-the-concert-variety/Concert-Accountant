@@ -10,13 +10,6 @@ const UserList = ({ userNameInput, userNameTemplate, button }) => {
                value={userNameTemplate}
                onChange={userNameInput}
             />
-            {/* // <label className="sr-only" htmlFor="budget">enter user budget</label>
-         // <input */}
-            {/* //    className="budget"
-         //    type="text"
-         //    placeholder="enter budget"
-         //    value = {userName}
-         // /> */}
             <input type="submit" />
          </form>
       </fieldset>
