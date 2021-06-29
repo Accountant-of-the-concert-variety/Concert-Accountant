@@ -23,7 +23,6 @@ import Search from './Search';
 import WatchList from './WatchList';
 import UserList from './UserList';
 import firebase from './firebase';
-import { act } from 'react-dom/cjs/react-dom-test-utils.production.min';
 
 function App() {
    const [events, setEvents] = useState([]);
@@ -46,11 +45,10 @@ function App() {
    const setUserNameButton = (e) => {
       e.preventDefault();
       setUserName(userNameTemplate);
-      console.log(userNameTemplate);
-   }
 
-   useEffect(() => {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+      console.log("setting userName to " + userNameTemplate);
+
+      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/watchList`);
 
       dbRef.on('value', (response) => {
          const newState = []
@@ -59,11 +57,16 @@ function App() {
 
          for (let key in data) {
             newState.push({ key: key, name: data[key] })
+            console.log(key);
          }
          // console.log(newState);
          setWatchList(newState);
       })
-   }, [])
+   }
+
+   // useEffect(() => {
+
+   // }, [])
 
    const removeListItem = (listId) => {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
@@ -73,7 +76,7 @@ function App() {
    function addToActiveList(listItem) {
       const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/${listItem.name}`);
       dbRef.set(listItem)
-      // console.log(listItem);
+      console.log(listItem);
 
       setActiveListItems([...activeListItems, listItem])
    }
@@ -82,6 +85,11 @@ function App() {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
       dbRef.push(search);
    }
+   console.log(search);
+
+   const searchQuery = (e) => {
+      setSearch(e.target.value);
+   };
 
    const submitForm = (e, searchTerm) => {
       e.preventDefault();
@@ -89,6 +97,7 @@ function App() {
       let searchWord = search;
 
       if (searchTerm) {
+         setSearch(searchTerm);
          searchWord = searchTerm;
       }
       // console.log(searchWord);
@@ -113,11 +122,7 @@ function App() {
             // setEvents([]);
             console.log("not found");
          })
-      setSearch("");
-   };
-
-   const searchQuery = (e) => {
-      setSearch(e.target.value);
+      // setSearch("");
    };
 
    //in case we need to filter events (by price, selected image etc. before displaying on the page)
@@ -136,11 +141,12 @@ function App() {
             const venueName = event._embedded.venues[0].name;
             const country = event._embedded.venues[0].country.countryCode;
             const city = event._embedded.venues[0].city.name;
-            const button = {
-               addToActiveList: addToActiveList,
-               text: `Add to ${activeList} list`
-            }
-            const key = event.id;
+            // const button = {
+            //    button: addToActiveList,
+            //    text: `Add to ${activeList} list`
+            // }
+
+            const key = `${userName + event.id}`;
 
             const venue = {
                name: venueName,
@@ -163,24 +169,28 @@ function App() {
             //update this to choose smallest image. Right now its just the first one
             const image = event.images[0].url;
 
-            return ({ name, image, date, venue, price, key, button })
+            return ({ name, image, date, venue, price, key })
          }));
       } else {
          const name = "No events found. Would you like to add to watch-list to search later?";
 
-         const button = {
-            button: addToWatchList,
-            text: `Add to watch list`
-         }
+         // const button = {
+         //    button: addToWatchList,
+         //    text: `Add to watch list`
+         // }
 
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
 
-         const event = [{ name, image, button }]
+         const event = [{ name, image }]
 
          setEvents(event);
       }
    }
 
+   // const button = {
+   //    button: addToActiveList,
+   //    text: `Add to ${activeList} list`
+   // }
 
    return (
       <div className="App">
@@ -214,6 +224,8 @@ function App() {
             <DisplayEvents
                events={events}
                displayType="searchResults"
+               activeList={activeList}
+               button={{ addToActiveList, addToWatchList }}
             />
          </ul>
       </div>

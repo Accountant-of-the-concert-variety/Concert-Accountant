@@ -1,7 +1,8 @@
-function DisplayEvents({ events, displayType }) {
+function DisplayEvents({ events, displayType, activeList, button }) {
+   const domButton = {};
 
    const eventItems = events.map(event => {
-      const { name, image, date, venue, price, button, key } = event;
+      const { name, image, date, venue, price, key } = event;
 
       const eventName = <p>{name}</p>;
       const eventDate = <p>{date}</p>
@@ -31,32 +32,48 @@ function DisplayEvents({ events, displayType }) {
          }
       };
 
-      const eventImage =
-         <img src={image} alt={name} />
-
-
+      const eventImage = <img src={image} alt={name} />
 
       let displayItem = {};
 
       if (displayType === "searchResults") {
+         
+         if (events.length > 1) {
+            domButton.button = button.addToActiveList;
+            domButton.text = `Add to ${activeList} list`
+            console.log('adding to my list')
+         } else {
+            domButton.button = button.addToWatchList;
+            domButton.text = `Add to watch list`
+            console.log('adding to watch list')
+         }
+
          displayItem =
-            <li className="searchResult" key={key}>
+            <li
+               className="searchResult"
+               key={`searchResults${key}`}
+            >
                <div className="image-container">
                   {eventImage}
                </div>
+
+               {console.log("rerender")}
 
                <div className="flex-container">
                   {eventName}
                   {eventDate}
                   {eventVenue()}
                   {eventPrice()}
-                  <button onClick={() => { button.addToActiveList({ name, image, date, venue, price, key }) }}>{button.text}</button>
+                  <button onClick={() => { domButton.button(event) }}>{domButton.text}</button>
                </div>
 
             </li>
       } else if (displayType === "listItems") {
          displayItem =
-            < li className="active-list-item" >
+            < li
+               className="active-list-item"
+               key={`listItem${key}`}
+            >
                {eventName}
             </li >
       }
