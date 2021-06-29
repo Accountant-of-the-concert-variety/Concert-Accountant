@@ -22,6 +22,7 @@ import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
 import UserList from './UserList';
+// import Lists from './Lists';
 import firebase from './firebase';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
 
    const [userName, setUserName] = useState("Brandon");
    const [userNameTemplate, setUserNameTemplate] = useState("")
+   const [userLists, setUserLists] = useState([]);
 
    console.log(userName)
 
@@ -50,23 +52,20 @@ function App() {
 
       const dbRef = firebase.database().ref(`${userNameTemplate}/lists/watchList`);
 
-      dbRef.on('value', (response) => {
-         const newState = []
-         const data = response.val()
+      dbRef.on("value", (response) => {
+         const newState = [];
+         const data = response.val();
          // console.log(data);
 
          for (let key in data) {
-            newState.push({ key: key, name: data[key] })
-            console.log(key);
+            newState.push({ key: key, name: data[key] });
          }
          // console.log(newState);
          setWatchList(newState);
-      })
+
+      });
+
    }
-
-   // useEffect(() => {
-
-   // }, [])
 
    const removeListItem = (listId) => {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
@@ -192,6 +191,20 @@ function App() {
    //    text: `Add to ${activeList} list`
    // }
 
+   useEffect(() => {
+      const dbRef = firebase.database().ref();
+      dbRef.on('value', (response) => {
+         const nameState = []
+         const data = response.val();
+         for (let key in data) {
+            nameState.push({ key: key, name: data[key] })
+         }
+         setUserLists(nameState);
+         console.log(userLists)
+      })
+   }, [])
+
+
    return (
       <div className="App">
          <Search
@@ -205,6 +218,18 @@ function App() {
             userNameTemplate={userNameTemplate}
             button={setUserNameButton}
          />
+
+         <div>
+            <ul>
+               {userLists.map(name => {
+                  return (
+                     <li key={name.key}>
+                        <p>{name.key}</p>
+                     </li>
+                  )
+               })}
+            </ul>
+         </div>
 
          <ol>
             <WatchList
@@ -229,7 +254,7 @@ function App() {
             />
          </ul>
       </div>
-   );
+   )
 }
 
 export default App;
