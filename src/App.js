@@ -62,19 +62,20 @@ function App() {
          }
          // console.log(newState);
          setWatchList(newState);
-         setUserName(newState)
       })
    }, [])
 
    const removeListItem = (listId) => {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`);
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
       dbRef.child(listId).remove();
    }
 
-   function addToActiveList() {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}`)
-      dbRef.push(search)
-      console.log(search)
+   function addToActiveList(listItem) {
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/${listItem.name}`);
+      dbRef.set(listItem)
+      // console.log(listItem);
+
+      setActiveListItems([...activeListItems, listItem])
    }
 
    function addToWatchList() {
@@ -135,7 +136,10 @@ function App() {
             const venueName = event._embedded.venues[0].name;
             const country = event._embedded.venues[0].country.countryCode;
             const city = event._embedded.venues[0].city.name;
-            const button = addToActiveList
+            const button = {
+               addToActiveList: addToActiveList,
+               text: `Add to ${activeList} list`
+            }
             const key = event.id;
 
             const venue = {
@@ -163,7 +167,12 @@ function App() {
          }));
       } else {
          const name = "No events found. Would you like to add to watch-list to search later?";
-         const button = addToWatchList;
+
+         const button = {
+            button: addToWatchList,
+            text: `Add to watch list`
+         }
+
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
 
          const event = [{ name, image, button }]

@@ -5,28 +5,36 @@ function DisplayEvents({ events, displayType }) {
 
       const eventName = <p>{name}</p>;
       const eventDate = <p>{date}</p>
-      let eventPrice = null;
-      let eventVenue = null;
+      const eventPrice = () => {
+         if (price) {
+            let domPrice = <p>${price.min} - ${price.max}</p>
+
+            if (price.min === price.max) {
+               domPrice = <p>${price.min}</p>
+            }
+
+            return (domPrice);
+
+         } else {
+            return null;
+         }
+      };
+      let eventVenue = () => {
+         if (venue) {
+            return (
+               <div>
+                  <p>{venue.name}</p>
+                  <p>{venue.city}</p>
+                  <p>{venue.country}</p>
+               </div>
+            )
+         }
+      };
 
       const eventImage =
          <img src={image} alt={name} />
 
-      if (price) {
-         eventPrice = <p>${price.min} - ${price.max}</p>
 
-         if (price.min === price.max) {
-            eventPrice = <p>${price.min}</p>
-         }
-      }
-
-      if (venue) {
-         eventVenue =
-            <div>
-               <p>{venue.name}</p>
-               <p>{venue.city}</p>
-               <p>{venue.country}</p>
-            </div>
-      }
 
       let displayItem = {};
 
@@ -40,19 +48,16 @@ function DisplayEvents({ events, displayType }) {
                <div className="flex-container">
                   {eventName}
                   {eventDate}
-                  {eventPrice}
-                  <button onClick={button}>Add to List</button>
+                  {eventVenue()}
+                  {eventPrice()}
+                  <button onClick={() => { button.addToActiveList({ name, image, date, venue, price, key }) }}>{button.text}</button>
                </div>
 
             </li>
       } else if (displayType === "listItems") {
          displayItem =
-            < li className="listItem" >
-               <div className="image-container">
-                  {eventImage}
-                  {eventName}
-               </div>
-
+            < li className="active-list-item" >
+               {eventName}
             </li >
       }
 
