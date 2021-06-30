@@ -280,24 +280,25 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Search
-          submitForm={submitForm}
-          value={search}
-          searchQuery={searchQuery}
-        />
+        <header>
+          <Search
+            submitForm={submitForm}
+            value={search}
+            searchQuery={searchQuery}
+          />
 
-        <UserNameForm
-          userNameInput={userNameInput}
-          userNameTemplate={userNameTemplate}
-          button={setUserNameButton}
-        />
+          <UserNameForm
+            userNameInput={userNameInput}
+            userNameTemplate={userNameTemplate}
+            button={setUserNameButton}
+          />
 
-        <AddLists
-          value={createList}
-          submitList={submitList}
-          onChange={onChange}
-        />
-
+          <AddLists
+            value={createList}
+            submitList={submitList}
+            onChange={onChange}
+          />
+        </header>
         <div>
           <ul>
             {userLists.map((name) => {
@@ -352,8 +353,7 @@ function App() {
         </ul>
 
         <Route exact path="/list">
-          <DisplayEvents events={activeListItems} displayType="listItems"
-           />
+          <DisplayEvents events={activeListItems} displayType="listItems" />
         </Route>
 
         <ul>

@@ -235,6 +235,10 @@ html {
   padding: 0;
 }
 
+header {
+    background: linear-gradient(to right, #9acdcf 0%, #79b3c6 100%);
+}
+
 img {
   width: 450px;
   box-shadow: #97dae8 5px 10px;
@@ -279,11 +283,6 @@ i {
 
 .searchResult {
   display: flex;
-}
-
-.buttonContainer {
-    position: relative;
-    top:20%;
 }
 
 .btn {
