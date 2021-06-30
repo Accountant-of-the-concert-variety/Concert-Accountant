@@ -1,13 +1,13 @@
-const Search = ({ submitForm, search, searchQuery }) => {
+const Search = ({ submitSearch, value, searchOnChange }) => {
    return (
-      <form onSubmit={submitForm}>
+      <form onSubmit={submitSearch}>
          <label className="sr-only" htmlFor="searchEvent">Search for an event</label>
          <input
             className="search"
             type="search"
             placeholder="Search for an event.."
-            value={search}
-            onChange={searchQuery}
+            value={value}
+            onChange={searchOnChange}
          />
       </form>
    )

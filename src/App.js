@@ -23,47 +23,66 @@ import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
 import UserNameForm from './UserList';
-import AddLists from './AddLists';
+import NewList from './AddLists';
 import firebase from './firebase';
 
 function App() {
    const [events, setEvents] = useState([]);
    const [search, setSearch] = useState("");
 
-   const [usersLists, setUsersLists] = useState([]);
+   const [allLists, setAllLists] = useState([]);
    const [activeList, setActiveList] = useState('New York');
    const [activeListItems, setActiveListItems] = useState([]);
 
    const [watchList, setWatchList] = useState([]);
-   const [createList, setCreateList] = useState("");
+   const [newListName, setNewListName] = useState("");
 
    const [userName, setUserName] = useState("Brandon");
-   const [userNameTemplate, setUserNameTemplate] = useState("")
-   const [userLists, setUserLists] = useState([]);
+   const [userNameValue, setUserNameValue] = useState("")
+   const [allUsers, setAllUsers] = useState([]);
 
    console.log("search = " + search);
    console.log(userName);
 
-   const userNameInput = (e) => {
+   useEffect(() => {
+      const dbRef = firebase.database().ref();
+      dbRef.on('value', (response) => {
+         const nameState = []
+         const data = response.val();
+         for (let key in data) {
+            nameState.push({ key: key, name: data[key] })
+         }
+         setAllUsers(nameState);
+      })
+   }, [])
+
+   const userNameOnChange = (e) => {
       e.preventDefault();
-      setUserNameTemplate(e.target.value)
+      setUserNameValue(e.target.value)
    }
 
-   const setUserNameButton = (e) => {
+   const submitUserName = (e) => {
       if (e) {
          e.preventDefault();
       }
 
-      setUserName(userNameTemplate);
+      setUserName(userNameValue);
 
-      console.log("setting userName to " + userNameTemplate);
-
-      createLists();
+      console.log("setting userName to " + userNameValue);
    }
 
-   const createLists = () => {
-      console.log(userNameTemplate);
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists`);
+   useEffect(() => {
+      updateLists();
+
+   }, [userName])
+
+   useEffect(() => {
+      updateUserLists(activeList);
+   }, [activeList])
+
+   const updateLists = () => {
+      console.log(userName);
+      const dbRef = firebase.database().ref(`${userName}/lists`);
       setWatchList([]);
       setActiveListItems([]);
 
@@ -77,13 +96,13 @@ function App() {
             updateUserLists(list);
          }
 
-         setUsersLists(lists);
+         setAllLists(lists);
       })
    }
 
    function updateUserLists(list) {
       console.log(list);
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}`);
+      const dbRef = firebase.database().ref(`${userName}/lists/${list}/events`);
 
       dbRef.on("value", (response) => {
          const newState = [];
@@ -106,27 +125,24 @@ function App() {
       });
    }
 
-   useEffect(() => {
-      updateUserLists(activeList);
-   }, [activeList])
+   function changeActiveList(list, e) {
+      if (e) {
+         e.preventDefault();
+      }
+
+      console.log(list);
+      setActiveList(list);
+   }
 
    const removeListItem = (listId) => {
       const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
       dbRef.child(listId).remove();
    }
 
-   function changeActiveList(list) {
-      console.log(list);
-      setActiveList(list);
-      updateUserLists(list)
-   }
-
    function addToActiveList(listItem) {
       const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`);
       dbRef.set(listItem)
       console.log(listItem);
-
-      // setActiveListItems([...activeListItems, listItem])
    }
 
    function addToWatchList() {
@@ -134,11 +150,11 @@ function App() {
       dbRef.push(search);
    }
 
-   const searchQuery = (e) => {
+   const searchOnChange = (e) => {
       setSearch(e.target.value);
    };
 
-   const submitForm = (e, searchTerm) => {
+   const submitSearch = (e, searchTerm) => {
       e.preventDefault();
       // dbRef.push(search);
       let searchWord = search;
@@ -169,15 +185,13 @@ function App() {
             // setEvents([]);
             console.log("not found");
          })
-      // setSearch("");
    };
 
-   //in case we need to filter events (by price, selected image etc. before displaying on the page)
-   function filterEvents(jsonData) {
+   function filterEvents(data) {
       let events = [];
 
-      if (jsonData._embedded) {
-         events = jsonData._embedded.events;
+      if (data._embedded) {
+         events = data._embedded.events;
       }
 
       if (events.length > 0) {
@@ -189,10 +203,6 @@ function App() {
             const venueName = event._embedded.venues[0].name;
             const country = event._embedded.venues[0].country.countryCode;
             const city = event._embedded.venues[0].city.name;
-            // const button = {
-            //    button: addToActiveList,
-            //    text: `Add to ${activeList} list`
-            // }
 
             const key = `${userName + event.id}`;
 
@@ -224,11 +234,6 @@ function App() {
       } else {
          const name = "No events found. Would you like to add to watch-list to search later?";
 
-         // const button = {
-         //    button: addToWatchList,
-         //    text: `Add to watch list`
-         // }
-
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
 
          const event = [{ name, image }]
@@ -237,37 +242,14 @@ function App() {
       }
    }
 
-   useEffect(() => {
-      const dbRef = firebase.database().ref();
-      dbRef.on('value', (response) => {
-         const nameState = []
-         const data = response.val();
-         for (let key in data) {
-            nameState.push({ key: key, name: data[key] })
-         }
-         setUserLists(nameState);
-         // console.log(userLists)
-      })
-   }, [])
+   // const submitList = (e) => {
+   //    e.preventDefault();
+   //    setActiveList(createList);
+   // }
 
-   const submitList = (e) => {
-      e.preventDefault();
-      setActiveList(createList);
-      //    const dbRef = firebase.database().ref(`${userName}`);
-      //    dbRef.on('value', (response) => {
-      //        const listState = []
-      //        const data = response.val();
-      //        for (let key in data) {
-      //            listState.push({key: key, name:data[key]})
-      //        }
-      //        setActiveList(listState);
-      //    })
-   }
-
-   const onChange = (e) => {
-      e.preventDefault();
+   const listNameOnChange = (e) => {
       console.log(e.target.value)
-      setCreateList(e.target.value);
+      setNewListName(e.target.value);
    }
 
 
@@ -275,34 +257,33 @@ function App() {
       <Router>
          <div className="App">
             <Search
-               submitForm={submitForm}
+               submitSearch={submitSearch}
                value={search}
-               searchQuery={searchQuery}
+               searchOnChange={searchOnChange}
             />
 
             <UserNameForm
-               userNameInput={userNameInput}
-               userNameTemplate={userNameTemplate}
-               button={setUserNameButton}
+               submitUserName={submitUserName}
+               value={userNameValue}
+               userNameOnChange={userNameOnChange}
             />
 
-            <AddLists
-               value={createList}
-               submitList={submitList}
-               onChange={onChange}
+            <NewList
+               submitList={(e) => changeActiveList(newListName, e)}
+               value={newListName}
+               listNameOnChange={listNameOnChange}
             />
 
             <div>
                <ul>
-                  {userLists.map((name) => {
+                  {allUsers.map((name) => {
                      return (
                         <li key={name.key}>
                            <p
+                              // bug - have to click twice
                               onClick={(e) => {
                                  e.preventDefault();
-                                 // setUserName(`${name.key}`);
-                                 setUserNameTemplate(`${name.key}`);
-                                 setUserNameButton();
+                                 setUserName(`${name.key}`);
                               }}
                            >
                               {name.key}
@@ -317,7 +298,7 @@ function App() {
                <WatchList
                   saveList={watchList}
                   remove={removeListItem}
-                  searchList={submitForm} />
+                  searchList={submitSearch} />
             </ol>
 
             {/* <ul>
@@ -329,7 +310,7 @@ function App() {
 
             <ul>
                {
-                  usersLists.map(list => {
+                  allLists.map(list => {
                      return (
                         <li>
                            <button onClick={() => { changeActiveList(list) }}>
@@ -362,3 +343,7 @@ function App() {
 }
 
 export default App;
+
+
+//Please change the file name of your "UserList.js" to "UserNameForm.js"
+//Please change the file name of your "AddLists.js" to "NewList.js"

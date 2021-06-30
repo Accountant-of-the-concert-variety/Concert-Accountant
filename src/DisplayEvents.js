@@ -1,88 +1,91 @@
 function DisplayEvents({ events, displayType, activeList, button }) {
-  const domButton = {};
+   const eventButton = {};
 
-  const eventItems = events.map((event) => {
-    const { type, name, image, date, venue, price, key } = event;
+   const eventItems = events.map(event => {
+      const { type, name, image, date, venue, price, key } = event;
 
-    const eventName = <p>{name}</p>;
-    const eventDate = <p>{date}</p>;
-    const eventPrice = () => {
-      if (price) {
-        let domPrice = (
-          <p>
-            ${price.min} - ${price.max}
-          </p>
-        );
+      const eventName = <p>{name}</p>;
+      const eventDate = <p>{date}</p>
+      const eventPrice = () => {
+         if (price) {
+            let domPrice = <p>${price.min} - ${price.max}</p>
 
-        if (price.min === price.max) {
-          domPrice = <p>${price.min}</p>;
-        }
+            if (price.min === price.max) {
+               domPrice = <p>${price.min}</p>
+            }
 
-        return domPrice;
-      } else {
-        return null;
-      }
-    };
-    let eventVenue = () => {
-      if (venue) {
-        return (
-          <div>
-            <p>{venue.name}</p>
-            <p>{venue.city}</p>
-            <p>{venue.country}</p>
-          </div>
-        );
-      }
-    };
+            return (domPrice);
 
-    const eventImage = <img src={image} alt={name} />;
+         } else {
+            return null;
+         }
+      };
+      let eventVenue = () => {
+         if (venue) {
+            return (
+               <div>
+                  <p>{venue.name}</p>
+                  <p>{venue.city}</p>
+                  <p>{venue.country}</p>
+               </div>
+            )
+         }
+      };
 
-    let displayItem = {};
+      const eventImage = <img src={image} alt={name} />
 
-    if (displayType === "searchResults") {
-      if (type === "event") {
-        domButton.button = button.addToActiveList;
-        domButton.text = `Add to ${activeList} list`;
-        console.log("adding to my list");
-      } else {
-        domButton.button = button.addToWatchList;
-        domButton.text = `Add to watch list`;
-        console.log("adding to watch list");
-      }
+      let displayItem = {};
 
-      displayItem = (
-        <li className="searchResult" key={`searchResults${key}`}>
-          <div className="image-container">{eventImage}</div>
+      if (displayType === "searchResults") {
 
-          {console.log("rerender")}
+         if (type === "event") {
+            eventButton.button = button.addToActiveList;
+            eventButton.text = `Add to "${activeList}" list`
+            console.log('adding to my list')
+         } else {
+            eventButton.button = button.addToWatchList;
+            eventButton.text = `Add to watch list`
+            console.log('adding to watch list')
+         }
 
-          <div className="flex-container">
-            {eventName}
-            {eventDate}
-            {eventVenue()}
-            {eventPrice()}
-            <button
-              onClick={() => {
-                domButton.button(event);
-              }}
+         displayItem =
+            <li
+               className="searchResult"
+               key={`searchResults${key}`}
             >
-              {domButton.text}
-            </button>
-          </div>
-        </li>
-      );
-    } else if (displayType === "listItems") {
-      displayItem = (
-        <li className="active-list-item" key={`listItem${key}`}>
-          {eventName}
-        </li>
-      );
-    }
+               <div className="image-container">
+                  {eventImage}
+               </div>
 
-    return displayItem;
-  });
+               {console.log("rerender")}
 
-  return <>{eventItems}</>;
+               <div className="flex-container">
+                  {eventName}
+                  {eventDate}
+                  {eventVenue()}
+                  {eventPrice()}
+                  <button onClick={() => { eventButton.button(event) }}>{eventButton.text}</button>
+               </div>
+
+            </li>
+      } else if (displayType === "listItems") {
+         displayItem =
+            < li
+               className="active-list-item"
+               key={`listItem${key}`}
+            >
+               {eventName}
+            </li >
+      }
+
+      return (displayItem)
+   })
+
+   return (
+      <>
+         {eventItems}
+      </>
+   )
 }
 
 export default DisplayEvents;
