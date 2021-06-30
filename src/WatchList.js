@@ -8,7 +8,7 @@ function WatchList (props) {
             <p onClick = { (e) => searchList(e, list.name)}>
                {list.name}
                <button onClick = { () => remove(list.key) }>
-                  x
+                  &times;
                </button>
             </p>
          </li>
