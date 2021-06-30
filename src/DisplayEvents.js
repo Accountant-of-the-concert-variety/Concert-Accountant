@@ -4,8 +4,8 @@ function DisplayEvents({ events, displayType, activeList, button }) {
   const eventItems = events.map((event) => {
     const { type, name, image, date, venue, price, key } = event;
 
-    const eventName = <p>{name}</p>;
-    const eventDate = <p>{date}</p>;
+    const eventName = <p class="eventName">{name}</p>;
+    const eventDate = <p><i class="far fa-calendar-times"></i>{date}</p>;
     const eventPrice = () => {
       if (price) {
         let domPrice = (
@@ -27,9 +27,14 @@ function DisplayEvents({ events, displayType, activeList, button }) {
       if (venue) {
         return (
           <div>
-            <p>{venue.name}</p>
-            <p>{venue.city}</p>
-            <p>{venue.country}</p>
+            <p>
+              <i class="fas fa-location-arrow"></i>
+              {venue.name}
+            </p>
+            <p>
+              <i class="far fa-flag"></i>
+              {venue.city}, {venue.country}
+            </p>
           </div>
         );
       }
@@ -52,22 +57,25 @@ function DisplayEvents({ events, displayType, activeList, button }) {
 
       displayItem = (
         <li className="searchResult" key={`searchResults${key}`}>
-          <div className="image-container">{eventImage}</div>
-
           {console.log("rerender")}
 
           <div className="flex-container">
-            {eventName}
-            {eventDate}
-            {eventVenue()}
-            {eventPrice()}
-            <button
-              onClick={() => {
-                domButton.button(event);
-              }}
-            >
-              {domButton.text}
-            </button>
+            <div className="image-container">{eventImage}</div>
+            <div className="text-container">
+              {eventName}
+              {eventDate}
+              {eventVenue()}
+              {eventPrice()}
+
+                <button className="btn btn-2 btn-2g"
+                  onClick={() => {
+                    domButton.button(event);
+                  }}
+                >
+                  {domButton.text}
+                </button>
+
+            </div>
           </div>
         </li>
       );
