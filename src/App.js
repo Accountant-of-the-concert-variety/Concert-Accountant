@@ -71,7 +71,7 @@ function App() {
       let lists = [];
 
       for (const list in response.val()) {
-        if (list !== "watchList") {
+        if (list != "watchList") {
           lists.push(list);
         }
         updateUserLists(list);
@@ -114,6 +114,10 @@ function App() {
     dbRef.child(listId).remove();
   };
 
+    const removeActiveListItem = (listItem) => {
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`);
+        dbRef.child(listItem).remove();
+    };
 
   function changeActiveList(list) {
     console.log(list);
@@ -280,25 +284,24 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <header>
-          <Search
-            submitForm={submitForm}
-            value={search}
-            searchQuery={searchQuery}
-          />
+        <Search
+          submitForm={submitForm}
+          value={search}
+          searchQuery={searchQuery}
+        />
 
-          <UserNameForm
-            userNameInput={userNameInput}
-            userNameTemplate={userNameTemplate}
-            button={setUserNameButton}
-          />
+        <UserNameForm
+          userNameInput={userNameInput}
+          userNameTemplate={userNameTemplate}
+          button={setUserNameButton}
+        />
 
-          <AddLists
-            value={createList}
-            submitList={submitList}
-            onChange={onChange}
-          />
-        </header>
+        <AddLists
+          value={createList}
+          submitList={submitList}
+          onChange={onChange}
+        />
+
         <div>
           <ul>
             {userLists.map((name) => {
@@ -353,7 +356,8 @@ function App() {
         </ul>
 
         <Route exact path="/list">
-          <DisplayEvents events={activeListItems} displayType="listItems" />
+          <DisplayEvents events={activeListItems} displayType="listItems"
+           button={removeActiveListItem}/>
         </Route>
 
         <ul>

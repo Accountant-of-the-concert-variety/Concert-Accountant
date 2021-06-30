@@ -81,7 +81,7 @@ function DisplayEvents({ events, displayType, activeList, button }) {
       );
     } else if (displayType === "listItems") {
       displayItem = (
-        <li className="active-list-item" key={`listItem${key}`}>
+        <li key={`listItem${key}`}>
           {eventName}
         </li>
       );
