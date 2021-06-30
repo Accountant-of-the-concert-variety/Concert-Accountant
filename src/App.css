@@ -8,12 +8,13 @@ html{line-height:1.15;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}bo
 
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; border: 0; padding: 0; white-space: nowrap; clip-path: inset(100%); clip: rect(0 0 0 0); overflow: hidden;}
 
+
+/* ERICS WORK */
 .wrapper {
    max-width: 1140px;
    width: 90%;
    margin: 0 auto;
 }
-
 
 /* HEADER */
 header h1 {
@@ -73,21 +74,194 @@ fieldset {
    width: 70%;
    font-weight: bold;
 }
-
 .activeListItem img {
    width: 30%;
    height: 50px;
-  align-self: center;
+   align-self: center;
 }
-
 li.activeListItem> div:nth-child(1) > p:nth-child(2) {
 margin-top: 0px;
 }
-
 li.activeListItem> div:nth-child(1) > p:nth-child(1) {
 margin-bottom: 5px;
 }
-
 .allListForm h4 {
    margin-bottom: 5px;
+}
+
+
+/* SAIFS WORK */
+body,
+html {
+  margin: 0 auto;
+  padding: 0;
+}
+
+img {
+  width: 450px;
+  box-shadow: #97dae8 5px 10px;
+  position: relative;
+  top: 10%;
+}
+.flex-container {
+  display: flex;
+  padding: 15px;
+  width: 600px;
+  flex-wrap: wrap;
+  flex-wrap: wrap;
+  flex-direction: row;
+  margin: 0 auto;
+  justify-content: center;
+}
+
+.text-container {
+  padding: 25px;
+  width: 250px;
+  text-align: center;
+  font-size: 20px;
+}
+
+i {
+  position: relative;
+  right: 5%;
+  color: #97dae8;
+  font-size: 25px;
+}
+
+.venue {
+  /* font-size: 20px; */
+}
+
+.eventName {
+  font-weight: 700;
+  font-family: "Montserrat", sans-serif;
+  font-size: 25px;
+  letter-spacing: -2px;
+}
+
+.searchResult {
+  display: flex;
+}
+
+.btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 15px 20px;
+  display: inline-block;
+  /* margin: 15px 30px; */
+  /* text-transform: uppercase; */
+  letter-spacing: 1px;
+  font-weight: 700;
+  font-size: 14px;
+  outline: none;
+  position: relative;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+}
+.btn::before {
+  text-transform: none;
+  line-height: 1;
+  position: relative;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  transition: all 0.3s;
+}
+
+.btn-2 {
+  background: #97dae8;
+  color: #12626e;
+  box-shadow: 0 7px #6e9fa8;
+  -webkit-transition: none;
+  -moz-transition: none;
+  transition: none;
+}
+
+.btn-2a:active {
+  box-shadow: 0 0 #6e9fa8;
+  top: 6px;
+}
+
+.btn-2g {
+  border-radius: 40px;
+}
+
+.btn-2g:hover {
+  box-shadow: 0 4px #6e9fa8;
+  top: 2px;
+}
+
+.btn-2g:active {
+  box-shadow: 0 0 #6e9fa8;
+  top: 6px;
+}
+
+li {
+  list-style: none;
+}
+
+ul {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+ol {
+  border: 2px solid #6e9fa8;
+  border-radius: 25px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  margin: 5px;
+}
+
+/* #DBF0EF #97DAE8 #C0C8F0 */
+
+.watchList {
+  border: 1px solid #12626e;
+  background-color: #97dae8;
+  border-radius: 5px;
+  padding: 2px;
+  max-width: 170px;
+  height: 65px;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.yourWatchlist {
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  font-size: 25px;
+}
+
+.watchListItem {
+  font-size: 20px;
+  letter-spacing: 1px;
+  text-transform: capitalize;
+}
+
+.removeButton {
+  position: relative;
+  left: 5%;
+  outline: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: white;
+  /* padding: 2px; */
+  border: 1px solid #12626e;
+  border-radius: 50px;
+  background-color: #12626e;
+}
+
+.removeButton:hover {
+    color: #97dae8;
 }

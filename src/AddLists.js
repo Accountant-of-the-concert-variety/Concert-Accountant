@@ -1,4 +1,4 @@
-const AddLists = ({ submitList, value, onChange, }) => {
+const AddLists = ({ submitList, value, onChange, number, updateNumber }) => {
    return (
       <form onSubmit={submitList} className = "createListForm">
          <label className="sr-only" htmlFor="addList">
@@ -16,9 +16,9 @@ const AddLists = ({ submitList, value, onChange, }) => {
                className="budget"
                type="number"
                placeholder="Enter a budget"
-            // value={}
-            // onchange={}/>
-            />
+               value={number}
+               onchange={updateNumber}/>
+      
          </div>
 
          <button>Create List</button>

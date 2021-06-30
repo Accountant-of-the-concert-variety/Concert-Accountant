@@ -79,7 +79,7 @@ function App() {
 
    function updateUserLists(list) {
       console.log(list);
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}`);
+      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}/events`);
 
       dbRef.on("value", (response) => {
          const newState = [];
@@ -111,11 +111,11 @@ function App() {
       dbRef.child(listId).remove();
    }
 
-   // const removeActiveListItem = (listItem) => {
-   //    const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`)
-   //    dbRef.child(listItem).remove();
-   //    console.log(listItem)
-   // }
+   const removeActiveListItem = (listItem) => {
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`)
+      dbRef.child(listItem).remove();
+      console.log(listItem)
+   }
 
    function changeActiveList(list) {
       console.log(list);
@@ -153,7 +153,7 @@ function App() {
       ticketMasterUrl.search = new URLSearchParams({
          apikey: ticketMasterKey,
          keyword: searchWord,
-         size: 5
+         size: 10
       })
 
       fetch(ticketMasterUrl)
@@ -276,6 +276,9 @@ function App() {
                      value={createList}
                      submitList={submitList}
                      onChange={onChange}
+                     number = {createList}
+                     updateNumber = {onChange}
+
                   />
 
                   <ul>
@@ -302,6 +305,7 @@ function App() {
                   </Route>
 
                   <ol>
+                     <p className="yourWatchlist">Your Watchlist</p>
                      <WatchList
                         saveList={watchList}
                         remove={removeWatchListItem}
