@@ -16,207 +16,123 @@
 
 // On all the events displayed, have a button for each event where you can add it to the list
 
-import { useEffect, useState } from "react";
-import "./App.css";
-import DisplayEvents from "./DisplayEvents";
-import Search from "./Search";
-import WatchList from "./WatchList";
-import UserList from "./UserList";
-import CreateLists from "./CreateLists";
-import firebase from "./firebase";
+import './App.css';
+import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import DisplayEvents from './DisplayEvents';
+import Search from './Search';
+import WatchList from './WatchList';
+import UserNameForm from './UserList';
+import AddLists from './AddLists';
+import firebase from './firebase';
 
 function App() {
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState("");
 
-  const [activeList, setActiveList] = useState("Chicago");
-  const [activeListItems, setActiveListItems] = useState([]);
-  const [watchList, setWatchList] = useState([]);
+   const [usersLists, setUsersLists] = useState([]);
+   const [activeList, setActiveList] = useState('New York');
+   const [activeListItems, setActiveListItems] = useState([]);
+
+   const [watchList, setWatchList] = useState([]);
+   const [createList, setCreateList] = useState("");
 
   const [userName, setUserName] = useState("");
   const [userNameTemplate, setUserNameTemplate] = useState("");
   const [userLists, setUserLists] = useState([]);
 
+   console.log("search = " + search);
+   console.log(userName);
 
  
   console.log(userName);
 
-  const userNameInput = (e) => {
-    e.preventDefault();
-    setUserNameTemplate(e.target.value);
-  };
+   const setUserNameButton = (e) => {
+      if (e) {
+         e.preventDefault();
+      }
+
+      setUserName(userNameTemplate);
 
   const setUserNameButton = (e) => {
     e.preventDefault();
     setUserName(userNameTemplate);
 
-    console.log("setting userName to " + userNameTemplate);
+      createLists();
+   }
 
-    const dbRef = firebase
-      .database()
-      .ref(`${userNameTemplate}/lists/watchList`);
+   const createLists = () => {
+      console.log(userNameTemplate);
+      const dbRef = firebase.database().ref(`${userNameTemplate}/lists`);
+      setWatchList([]);
+      setActiveListItems([]);
 
-    dbRef.on("value", (response) => {
-      const newState = [];
-      const data = response.val();
-      // console.log(data);
+      dbRef.on("value", response => {
+         let lists = [];
 
-      for (let key in data) {
-        newState.push({ key: key, name: data[key] });
-      }
-      // console.log(newState);
-      setWatchList(newState);
-      // dbRef.push(userNameInput)
-    });
-  };
+         for (const list in response.val()) {
+            if (list != "watchList") {
+               lists.push(list);
+            }
+            updateUserLists(list);
+         }
 
-  const removeListItem = (listId) => {
-    const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
-    dbRef.child(listId).remove();
-  };
-
-  function addToActiveList(listItem) {
-    const dbRef = firebase
-      .database()
-      .ref(`${userName}/lists/${activeList}/${listItem.name}`);
-    dbRef.set(listItem);
-    console.log(listItem);
-
-    setActiveListItems([...activeListItems, listItem]);
-  }
-
-  function addToWatchList() {
-    const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
-    dbRef.push(search);
-  }
-
-  const searchQuery = (e) => {
-    setSearch(e.target.value);
-  };
-
-  const submitForm = (e, searchTerm) => {
-    e.preventDefault();
-    // dbRef.push(search);
-    let searchWord = search;
-
-    if (searchTerm) {
-      setSearch(searchTerm);
-      searchWord = searchTerm;
-    }
-    // console.log(searchWord);
-
-    const ticketMasterUrl = new URL(
-      "https://app.ticketmaster.com/discovery/v2/events.json"
-    );
-    const ticketMasterKey = "LTtkh2NXZOyGcG6HGOASJH8KgZ4JiKGX";
-
-    ticketMasterUrl.search = new URLSearchParams({
-      apikey: ticketMasterKey,
-      keyword: searchWord,
-      size: 5,
-    });
-
-    fetch(ticketMasterUrl)
-      .then((data) => {
-        return data.json();
+         setUsersLists(lists);
       })
-      .then((jsonData) => {
-        filterEvents(jsonData);
-      })
-      .catch((data) => {
-        filterEvents(data);
-        // setEvents([]);
-        console.log("not found");
+   }
+
+   function updateUserLists(list) {
+      console.log(list);
+      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}`);
+
+      dbRef.on("value", (response) => {
+         const newState = [];
+         const data = response.val();
+
+         if (list === "watchList") {
+            for (let key in data) {
+               newState.push({ key: key, name: data[key] });
+            }
+
+            setWatchList(newState);
+
+         } else if (list === activeList) {
+            for (const key in data) {
+               newState.push(data[key])
+            }
+
+            setActiveListItems(newState);
+         }
       });
-    // setSearch("");
-  };
+   }
 
-  //in case we need to filter events (by price, selected image etc. before displaying on the page)
-  function filterEvents(jsonData) {
-    let events = [];
+   useEffect(() => {
+      updateUserLists(activeList);
+   }, [activeList])
 
-    if (jsonData._embedded) {
-      events = jsonData._embedded.events;
-    }
+   const removeListItem = (listId) => {
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+      dbRef.child(listId).remove();
+   }
 
-    if (events.length > 0) {
-      setEvents(
-        events.map((event) => {
-          const name = event.name;
-          const date = event.dates.start.localDate;
+   function changeActiveList(list) {
+      console.log(list);
+      setActiveList(list);
+      updateUserLists(list)
+   }
 
-          const venueName = event._embedded.venues[0].name;
-          const country = event._embedded.venues[0].country.countryCode;
-          const city = event._embedded.venues[0].city.name;
-          // const button = {
-          //    button: addToActiveList,
-          //    text: `Add to ${activeList} list`
-          // }
+   function addToActiveList(listItem) {
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`);
+      dbRef.set(listItem)
+      console.log(listItem);
 
-          const key = `${userName + event.id}`;
+      // setActiveListItems([...activeListItems, listItem])
+   }
 
-          const venue = {
-            name: venueName,
-            city: city,
-            country: country,
-          };
-
-          let price = {
-            min: 0,
-            max: 0,
-          };
-
-          if (event.priceRanges) {
-            price = {
-              min: event.priceRanges[0].min,
-              max: event.priceRanges[0].max,
-            };
-          }
-
-          //update this to choose smallest image. Right now its just the first one
-          const image = event.images[0].url;
-
-          return { name, image, date, venue, price, key };
-        })
-      );
-    } else {
-      const name =
-        "No events found. Would you like to add to watch-list to search later?";
-
-      // const button = {
-      //    button: addToWatchList,
-      //    text: `Add to watch list`
-      // }
-
-      const image =
-        "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1";
-
-      const event = [{ name, image }];
-
-      setEvents(event);
-    }
-  }
-
-  // const button = {
-  //    button: addToActiveList,
-  //    text: `Add to ${activeList} list`
-  // }
-
-  useEffect(() => {
-    const dbRef = firebase.database().ref();
-    dbRef.on("value", (response) => {
-      const nameState = [];
-      const data = response.val();
-      for (let key in data) {
-        nameState.push({ key: key, name: data[key] });
-      }
-      setUserLists(nameState);
-      console.log(userLists);
-    });
-  }, []);
-
-
-
+   function addToWatchList() {
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+      dbRef.push(search);
+   }
 
 
 
@@ -231,73 +147,185 @@ function App() {
    };
 
 
-  return (
-    <div className="App">
-      <Search
-        submitForm={submitForm}
-        value={search}
-        searchQuery={searchQuery}
-      />
-      <UserList
-        userNameInput={userNameInput}
-        userNameTemplate={userNameTemplate}
-        button={setUserNameButton}
-      />
+      if (events.length > 0) {
+         const eventList = (events.map(event => {
+            const type = "event"
+            const name = event.name;
+            const date = event.dates.start.localDate;
 
-      <CreateLists
-      // submitForm={submitList}
-      value={activeList} 
-      createList={newList}/>
+            const venueName = event._embedded.venues[0].name;
+            const country = event._embedded.venues[0].country.countryCode;
+            const city = event._embedded.venues[0].city.name;
+            // const button = {
+            //    button: addToActiveList,
+            //    text: `Add to ${activeList} list`
+            // }
 
-     
+            const key = `${userName + event.id}`;
+
+            const venue = {
+               name: venueName,
+               city: city,
+               country: country
+            }
+
+            let price = {
+               min: 0,
+               max: 0
+            }
+
+            if (event.priceRanges) {
+               price = {
+                  min: event.priceRanges[0].min,
+                  max: event.priceRanges[0].max
+               }
+            }
+
+            //update this to choose smallest image. Right now its just the first one
+            const image = event.images[0].url;
+
+            return ({ type, name, image, date, venue, price, key })
+         }));
+
+         setEvents(eventList);
+      } else {
+         const name = "No events found. Would you like to add to watch-list to search later?";
+
+         // const button = {
+         //    button: addToWatchList,
+         //    text: `Add to watch list`
+         // }
+
+         const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
+
+         const event = [{ name, image }]
+
+         setEvents(event);
+      }
+   }
+
+   useEffect(() => {
+      const dbRef = firebase.database().ref();
+      dbRef.on('value', (response) => {
+         const nameState = []
+         const data = response.val();
+         for (let key in data) {
+            nameState.push({ key: key, name: data[key] })
+         }
+         setUserLists(nameState);
+         // console.log(userLists)
+      })
+   }, [])
+
+   const submitList = (e) => {
+      e.preventDefault();
+      setActiveList(createList);
+      //    const dbRef = firebase.database().ref(`${userName}`);
+      //    dbRef.on('value', (response) => {
+      //        const listState = []
+      //        const data = response.val();
+      //        for (let key in data) {
+      //            listState.push({key: key, name:data[key]})
+      //        }
+      //        setActiveList(listState);
+      //    })
+   }
+
+   const onChange = (e) => {
+      e.preventDefault();
+      console.log(e.target.value)
+      setCreateList(e.target.value);
+   }
 
 
-      <div>
-        <ul>
-          {userLists.map((name) => {
-            return (
-              <li key={name.key}>
-                <p
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setUserName(`${name.key}`);
-                  }}
-                >
-                  {name.key}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+   return (
+      <Router>
+         <div className="App">
+            <Search
+               submitForm={submitForm}
+               value={search}
+               searchQuery={searchQuery}
+            />
 
-      <ol>
-        <p>Your watchlist</p>
-        <WatchList
-          saveList={watchList}
-          remove={removeListItem}
-          searchList={submitForm}
-        />
-      </ol>
+            <UserNameForm
+               userNameInput={userNameInput}
+               userNameTemplate={userNameTemplate}
+               button={setUserNameButton}
+            />
 
-      <ul>
-        <p onClick={(e) => {
-           e.preventDefault();
-         //   setActiveList(`${}`)
-        }}>Your activelists</p>
-        <DisplayEvents events={activeListItems} displayType="listItems" />
-      </ul>
+            <AddLists
+               value={createList}
+               submitList={submitList}
+               onChange={onChange}
+            />
 
-      <ul>
-        <DisplayEvents
-          events={events}
-          displayType="searchResults"
-          activeList={activeList}
-          button={{ addToActiveList, addToWatchList }}
-        />
-      </ul>
-    </div>
-  );
+            <div>
+               <ul>
+                  {userLists.map((name) => {
+                     return (
+                        <li key={name.key}>
+                           <p
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 // setUserName(`${name.key}`);
+                                 setUserNameTemplate(`${name.key}`);
+                                 setUserNameButton();
+                              }}
+                           >
+                              {name.key}
+                           </p>
+                        </li>
+                     );
+                  })}
+               </ul>
+            </div>
+
+            <ol>
+               <WatchList
+                  saveList={watchList}
+                  remove={removeListItem}
+                  searchList={submitForm} />
+            </ol>
+
+            {/* <ul>
+               <DisplayEvents
+                  events={activeListItems}
+                  displayType="listItems"
+               />
+            </ul> */}
+
+            <ul>
+               {
+                  usersLists.map(list => {
+                     return (
+                        <li>
+                           <button onClick={() => { changeActiveList(list) }}>
+                              <Link to="/list">{list}</Link>
+                           </button>
+                        </li>
+                     )
+                  })
+               }
+            </ul>
+
+            <Route exact path="/list">
+               <DisplayEvents
+                  events={activeListItems}
+                  displayType="listItems"
+               />
+            </Route>
+
+            <ul>
+               <DisplayEvents
+                  events={events}
+                  displayType="searchResults"
+                  activeList={activeList}
+                  button={{ addToActiveList, addToWatchList }}
+               />
+            </ul>
+         </div>
+      </Router>
+   );
 }
 
 export default App;

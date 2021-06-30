@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const UserList = ({userNameInput, userNameTemplate, button}) => {
+=======
+const UserNameForm = ({ userNameInput, userNameTemplate, button }) => {
+>>>>>>> 44f1c0aff7a1ee9dd47673adb5a855acb44f82b5
    return (
       <fieldset>
       <form onSubmit = {button}>
@@ -23,4 +27,4 @@ const UserList = ({userNameInput, userNameTemplate, button}) => {
    )
 }
 
-export default UserList;
+export default UserNameForm;
