@@ -1,7 +1,7 @@
 const UserNameForm = ({ userNameInput, userNameTemplate, button }) => {
    return (
-      <fieldset>
-         <form onSubmit={button}>
+      <fieldset >
+         <form onSubmit={button} className="logInForm">
             <label className="sr-only" htmlFor="name">enter user name</label>
             <input
                className="name"
@@ -10,7 +10,7 @@ const UserNameForm = ({ userNameInput, userNameTemplate, button }) => {
                value={userNameTemplate}
                onChange={userNameInput}
             />
-            <input type="submit" />
+            <button>Submit</button>
          </form>
       </fieldset>
    )

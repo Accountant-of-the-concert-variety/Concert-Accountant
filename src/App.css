@@ -7,3 +7,87 @@ html{line-height:1.15;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}bo
 .visuallyHidden:not(:focus):not(:active) { position: absolute; width: 1px; height: 1px; margin: -1px;border: 0;padding: 0;white-space: nowrap;clip-path: inset(100%);clip: rect(00 0 0);overflow: hidden;}
 
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; border: 0; padding: 0; white-space: nowrap; clip-path: inset(100%); clip: rect(0 0 0 0); overflow: hidden;}
+
+.wrapper {
+   max-width: 1140px;
+   width: 90%;
+   margin: 0 auto;
+}
+
+
+/* HEADER */
+header h1 {
+   padding-top: 20px;
+}
+header h2 {
+   border-top: 1.5px solid black;
+   border-bottom: 3px solid black;
+   text-align: center;
+   background-color: gray;
+}
+.search  {
+   position:relative;
+   left: 5%;
+   border: 3px solid black;
+}
+
+/* USER FORM */
+.userForm {
+width: 400px;
+margin-top: 5%;
+background-color: lightgrey;
+padding: 15px;
+border-radius: 5%;
+margin-left: 10px;
+}
+.userForm h3 {
+   text-align: center;
+}
+.logInForm {
+   display: flex;
+   flex-direction: column;
+}
+fieldset {
+   margin-bottom: 10px;
+}
+.logInForm input {
+   text-align: center;
+   padding: 10px 0;
+}
+.logInForm button {
+   width: 30%;
+   margin: 0 auto;
+   margin-top: 10px;
+}
+.createListForm {
+   display: flex;
+   flex-direction: column;
+}
+.createListForm button {
+   width: 30%;
+}
+.activeListItem {
+   display: flex;
+}
+.activeListItem div {
+   width: 70%;
+   font-weight: bold;
+}
+
+.activeListItem img {
+   width: 30%;
+   height: 50px;
+  align-self: center;
+}
+
+li.activeListItem> div:nth-child(1) > p:nth-child(2) {
+margin-top: 0px;
+}
+
+li.activeListItem> div:nth-child(1) > p:nth-child(1) {
+margin-bottom: 5px;
+}
+
+.allListForm h4 {
+   margin-bottom: 5px;
+}
