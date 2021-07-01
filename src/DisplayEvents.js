@@ -51,16 +51,16 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
          if (type === "event") {
             domButton.button = button.addToActiveList;
             domButton.text = `Add to "${activeList}" list`;
-            console.log("adding to my list");
+            // console.log("adding to my list");
          } else {
             domButton.button = button.addToWatchList;
             domButton.text = `Add to watch list`;
-            console.log("adding to watch list");
+            // console.log("adding to watch list");
          }
 
          displayItem = (
             <li className="searchResult" key={`searchResults${key}`}>
-               {console.log("rerender")}
+               {/* {console.log("rerender")} */}
 
                <div className="flex-container">
                   <div className="image-container">{eventImage}</div>

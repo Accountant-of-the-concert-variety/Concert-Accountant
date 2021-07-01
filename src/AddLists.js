@@ -1,4 +1,4 @@
-const AddLists = ({ submitList, value, onChangeName, onChangeNumber }) => {
+const AddLists = ({ submitList, value, onChange, }) => {
    return (
       <form onSubmit={submitList} className="createListForm">
 
@@ -11,7 +11,7 @@ const AddLists = ({ submitList, value, onChangeName, onChangeNumber }) => {
                type="text"
                placeholder="Add a new list"
                value={value.name}
-               onChange={onChangeName}
+               onChange={(e) => onChange("name", e)}
             />
             <label className="sr-only" htmlFor="budgetNumber">Add a budget</label>
             <input
@@ -19,7 +19,7 @@ const AddLists = ({ submitList, value, onChangeName, onChangeNumber }) => {
                type="number"
                placeholder="Enter a budget"
                value={value.budget}
-               onChange={onChangeNumber}
+               onChange={(e) => onChange("budget", e)}
             />
          </div>
 

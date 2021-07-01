@@ -41,6 +41,10 @@ function App() {
    const [userNameTemplate, setUserNameTemplate] = useState("")
    const [allUsers, setAllUsers] = useState([]);
 
+
+   const [firebaseRef, setFirebaseRef] = useState({});
+   const [firebaseVal, setFirebaseVal] = useState({});
+
    // console.log("search = " + search);
    // console.log(userName);
 
@@ -71,13 +75,11 @@ function App() {
 
          for (const list in response.val()) {
             if (list !== "watchList") {
-               lists.push({name: list, budget: dbRef.child(list).value});
-               console.log(dbRef.child(list).budget);
+               lists.push({ name: list, budget: response.val()[list].budget });
             }
             updateUserLists(list);
          }
 
-         console.log(lists);
 
          setAllLists(lists);
       })
@@ -85,7 +87,7 @@ function App() {
 
 
    function updateUserLists(list) {
-      console.log(list);
+      // console.log(list);
       const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}/events`);
 
       dbRef.on("value", (response) => {
@@ -114,17 +116,6 @@ function App() {
       // eslint-disable-next-line
    }, [activeList])
 
-   // REMOVE BUTTONS
-   const removeActiveListItem = (listItem) => {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`)
-      dbRef.remove();
-      console.log(listItem)
-   }
-   const removeWatchListItem = (listId) => {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList/events`);
-      dbRef.child(listId).remove();
-   }
-
    function submitNewList(list, e) {
       e.preventDefault();
 
@@ -139,22 +130,56 @@ function App() {
    function changeActiveList(list, e) {
       e.preventDefault(); //maybe remove
 
-      console.log(list);
+      // console.log(list);
       setActiveList(list);
-      updateUserLists(list)
+      updateUserLists(list);
    }
 
+
+   function removeFromLists(list, item) {
+      let title = item.title;
+
+      if (!item.title) {
+         title = item;
+         console.log(title);
+      }
+
+      // firebaseRef.child(`${userName}/lists/${list}/events/${title}`).set(item);
+
+      firebaseRef.child(`${userName}/lists/${list}/events/${title}`).remove();
+   }
+
+   function addToLists(list, item) {
+      let title = item.title;
+
+      if (!item.title) {
+         title = item;
+         console.log(title);
+      }
+
+      firebaseRef.child(`${userName}/lists/${list}/events/${title}`).set(item);
+   }
+
+
+   // REMOVE BUTTONS
+   const removeActiveListItem = (listItem) => {
+      removeFromLists(activeList, listItem);
+   }
+
+   const removeWatchListItem = (listId) => {
+      console.log(listId);
+      removeFromLists("watchList", listId);
+   }
 
    // ADD BUTTONS
    function addToActiveList(listItem) {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name.replace(/[^a-zA-Z0-9 ]/g, "")}`);
-      dbRef.set(listItem)
-      console.log(listItem);
+      addToLists(activeList, listItem);
    }
    function addToWatchList() {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList/events`);
-      dbRef.push(search);
+      addToLists("watchList", search)
    }
+
+
 
    // SEARCH FORM
    const searchQuery = (e) => {
@@ -204,6 +229,8 @@ function App() {
 
       if (events.length > 0) {
          const eventList = (events.map(event => {
+            const title = event.name.replace(/[^a-zA-Z0-9 ]/g, "");
+
             const type = "event"
             const name = event.name;
             const date = event.dates.start.localDate;
@@ -234,7 +261,7 @@ function App() {
             //update this to choose smallest image. Right now its just the first one
             const image = event.images[0].url;
 
-            return ({ type, name, image, date, venue, price, key })
+            return ({ title, type, name, image, date, venue, price, key });
          }));
 
          setEvents(eventList);
@@ -249,41 +276,29 @@ function App() {
       }
    }
 
+   // console.log(firebaseData);
+
    useEffect(() => {
       const dbRef = firebase.database().ref();
+      setFirebaseRef(dbRef);
+
       dbRef.on('value', (response) => {
+         setFirebaseVal(response.val());
          const nameState = []
          const data = response.val();
          for (let key in data) {
             nameState.push({ key: key, name: data[key] })
          }
          setAllUsers(nameState);
+         console.log("firebase updating")
+
       })
    }, [])
 
-   // const submitList = (e) => {
-   //    e.preventDefault();
-   //    setActiveList(createList);
-   // }
-
-
-
-   // console.log(activeListItems);
-
-
-   const onChangeName = (e) => {
-      e.preventDefault();
-      console.log(e.target.value)
-
-      setCreateList({ name: e.target.value, budget: createList.budget })
-      // console.log(e.target);
-   }
-
-   const onChangeNumber = (e) => {
-      e.preventDefault();
-      console.log(e.target.value)
-      setCreateList({ name: createList.name, budget: e.target.value })
-      // console.log(e.target);
+   const addListOnChange = (key, e) => {
+      let updateList = createList;
+      updateList[key] = e.target.value;
+      setCreateList({ ...updateList });
    }
 
    return (
@@ -313,8 +328,7 @@ function App() {
                   <AddLists
                      submitList={(e) => submitNewList(createList, e)}
                      value={createList}
-                     onChangeName={onChangeName}
-                     onChangeNumber={onChangeNumber}
+                     onChange={addListOnChange}
                   />
 
                   <ul>

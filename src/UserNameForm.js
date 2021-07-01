@@ -6,7 +6,7 @@ const UserNameForm = ({ userNameInput, userNameTemplate, button }) => {
             <input
                className="name"
                type="text"
-               placeholder="enter user name"
+               placeholder="Enter user name"
                value={userNameTemplate}
                onChange={userNameInput}
             />
