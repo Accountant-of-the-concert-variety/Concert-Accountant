@@ -1,8 +1,11 @@
 function DisplayEvents({ events, displayType, activeList, button }) {
    const eventButton = {};
-
+   
+   
    const eventItems = events.map(event => {
       const { type, name, image, date, venue, price, key } = event;
+      
+      // console.log("events = " + event.type)
 
       const eventName = <p>{name}</p>;
       const eventDate = <p>{date}</p>
@@ -41,11 +44,11 @@ function DisplayEvents({ events, displayType, activeList, button }) {
          if (type === "event") {
             eventButton.button = button.addToActiveList;
             eventButton.text = `Add to "${activeList}" list`
-            console.log('adding to my list')
+            // console.log('adding to my list')
          } else {
             eventButton.button = button.addToWatchList;
             eventButton.text = `Add to watch list`
-            console.log('adding to watch list')
+            // console.log('adding to watch list')
          }
 
          displayItem =
@@ -57,7 +60,7 @@ function DisplayEvents({ events, displayType, activeList, button }) {
                   {eventImage}
                </div>
 
-               {console.log("rerender")}
+               {/* {console.log("rerender")} */}
 
                <div className="flex-container">
                   {eventName}
@@ -69,6 +72,8 @@ function DisplayEvents({ events, displayType, activeList, button }) {
 
             </li>
       } else if (displayType === "listItems") {
+         console.log("Check")
+
          displayItem =
             < li
                className="active-list-item"

@@ -1,14 +1,14 @@
-const UserNameForm = ({ submitUserName, value, userNameOnChange }) => {
+const UserNameForm = ({ userNameInput, userNameTemplate, button }) => {
    return (
       <fieldset>
-         <form onSubmit={submitUserName}>
+         <form onSubmit={button}>
             <label className="sr-only" htmlFor="name">enter user name</label>
             <input
                className="name"
                type="text"
                placeholder="enter user name"
-               value={value}
-               onChange={userNameOnChange}
+               value={userNameTemplate}
+               onChange={userNameInput}
             />
             {/* // <label className="sr-only" htmlFor="budget">enter user budget</label>
          // <input */}
