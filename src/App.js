@@ -31,19 +31,19 @@ function App() {
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState("");
 
-  const [usersLists, setUsersLists] = useState([]);
+  const [allLists, setAllLists] = useState([]);
   const [activeList, setActiveList] = useState("");
   const [activeListItems, setActiveListItems] = useState([]);
 
   const [watchList, setWatchList] = useState([]);
-  const [createList, setCreateList] = useState("");
+  const [createList, setCreateList] = useState({ name: "", budget: "" });
 
   const [userName, setUserName] = useState("");
   const [userNameTemplate, setUserNameTemplate] = useState("");
-  const [userLists, setUserLists] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
 
-  console.log("search = " + search);
-  console.log(userName);
+  // console.log("search = " + search);
+  // console.log(userName);
 
   // USERNAME FORM
   const userNameInput = (e) => {
@@ -70,12 +70,15 @@ function App() {
 
       for (const list in response.val()) {
         if (list !== "watchList") {
-          lists.push(list);
+          lists.push({ name: list, budget: dbRef.child(list).value });
+          console.log(dbRef.child(list).budget);
         }
         updateUserLists(list);
       }
 
-      setUsersLists(lists);
+      console.log(lists);
+
+      setAllLists(lists);
     });
   };
 
@@ -110,16 +113,6 @@ function App() {
     // eslint-disable-next-line
   }, [activeList]);
 
-  const submitList = (e) => {
-    e.preventDefault();
-    setActiveList(createList);
-  };
-
-  const onChange = (e) => {
-    e.preventDefault();
-    setCreateList(e.target.value);
-  };
-
   // REMOVE BUTTONS
   const removeActiveListItem = (listItem) => {
     const dbRef = firebase
@@ -133,8 +126,22 @@ function App() {
     dbRef.child(listId).remove();
   };
 
+  function submitNewList(list, e) {
+    e.preventDefault();
+
+    const dbRef = firebase
+      .database()
+      .ref(`${userName}/lists/${list.name}/budget`);
+
+    dbRef.set(list.budget);
+
+    changeActiveList(list.name, e);
+  }
+
   // ACTIVE LIST BUTTON
-  function changeActiveList(list) {
+  function changeActiveList(list, e) {
+    e.preventDefault(); //maybe remove
+
     console.log(list);
     setActiveList(list);
     updateUserLists(list);
@@ -263,49 +270,72 @@ function App() {
       for (let key in data) {
         nameState.push({ key: key, name: data[key] });
       }
-      setUserLists(nameState);
+      setAllUsers(nameState);
     });
   }, []);
+
+  // const submitList = (e) => {
+  //    e.preventDefault();
+  //    setActiveList(createList);
+  // }
+
+  // console.log(activeListItems);
+
+  const onChangeName = (e) => {
+    e.preventDefault();
+    console.log(e.target.value);
+
+    setCreateList({ name: e.target.value, budget: createList.budget });
+    // console.log(e.target);
+  };
+
+  const onChangeNumber = (e) => {
+    e.preventDefault();
+    console.log(e.target.value);
+    setCreateList({ name: createList.name, budget: e.target.value });
+    // console.log(e.target);
+  };
 
   return (
     <Router>
       <div className="App">
         <header>
           <h1 className="wrapper">CONCERT ACCOUNTANT</h1>
-          <h2>Find the joy that fits your needs</h2>
+          <h2>Search For Events and Make YOUR LIST</h2>
         </header>
         <Search
           submitSearch={submitForm}
           value={search}
           onChange={searchQuery}
         />
-
         <main>
           <aside className="userForm">
             <h3>Create Your Lists</h3>
+
             <UserNameForm
               userNameInput={userNameInput}
-              value={userNameTemplate}
+              userNameTemplate={userNameTemplate}
               button={setUserNameButton}
             />
 
             <AddLists
+              submitList={(e) => submitNewList(createList, e)}
               value={createList}
-              onChange={onChange}
-              submitList={submitList}
+              onChangeName={onChangeName}
+              onChangeNumber={onChangeNumber}
             />
 
             <ul>
               <h4>{`User logged in: ${userName}`}</h4>
-              {usersLists.map((list) => {
+              {allLists.map((list) => {
                 return (
                   <li>
                     <button
-                      onClick={() => {
-                        changeActiveList(list);
+                      onClick={(e) => {
+                        changeActiveList(list.name, e);
                       }}
                     >
-                      <Link to="/list">{list}</Link>
+                      <Link to="/list">{list.name + list.budget}</Link>
                     </button>
                   </li>
                 );
@@ -332,7 +362,7 @@ function App() {
             <div className="allListForm">
               <h4>Check Out Other User Lists!</h4>
               <select name="" id="">
-                {userLists.map((name) => {
+                {allUsers.map((name) => {
                   return (
                     <option
                       key={name.key}

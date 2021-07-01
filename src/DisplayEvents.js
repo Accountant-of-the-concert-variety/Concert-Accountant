@@ -55,7 +55,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
     if (displayType === "searchResults") {
       if (type === "event") {
         domButton.button = button.addToActiveList;
-        domButton.text = `+ Add to ${activeList} list`;
+        domButton.text = `Add to "${activeList}" list`;
         console.log("adding to my list");
       } else {
         domButton.button = button.addToWatchList;
@@ -64,7 +64,6 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
       }
 
       displayItem = (
-        
         <li className="searchResult" key={`searchResults${key}`}>
           {console.log("rerender")}
 
@@ -106,7 +105,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
     return displayItem;
   });
 
-  return <>{eventItems}</>;
+  return eventItems;
 }
 
 export default DisplayEvents;
