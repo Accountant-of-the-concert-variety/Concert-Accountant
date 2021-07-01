@@ -1,5 +1,5 @@
 function ActiveList (props) {
-   const {saveList, remove, searchList} = props
+   const {saveList, remove, searchList, remove} = props
    
    return (
          saveList.map(list => {

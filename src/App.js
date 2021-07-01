@@ -22,7 +22,7 @@ import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
-import UserNameForm from './UserList';
+import UserNameForm from './UserNameForm';
 import AddLists from './AddLists';
 import firebase from './firebase';
 
@@ -31,13 +31,13 @@ function App() {
    const [search, setSearch] = useState("");
 
    const [usersLists, setUsersLists] = useState([]);
-   const [activeList, setActiveList] = useState('New York');
+   const [activeList, setActiveList] = useState('');
    const [activeListItems, setActiveListItems] = useState([]);
 
    const [watchList, setWatchList] = useState([]);
    const [createList, setCreateList] = useState("");
 
-   const [userName, setUserName] = useState("Brandon");
+   const [userName, setUserName] = useState("");
    const [userNameTemplate, setUserNameTemplate] = useState("")
    const [userLists, setUserLists] = useState([]);
 
@@ -53,11 +53,7 @@ function App() {
       if (e) {
          e.preventDefault();
       }
-
       setUserName(userNameTemplate);
-
-      console.log("setting userName to " + userNameTemplate);
-
       createLists();
    }
 
@@ -111,9 +107,15 @@ function App() {
       // eslint-disable-next-line
    }, [activeList])
 
-   const removeListItem = (listId) => {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+   const removeWatchListItem = (listId) => {
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList/events`);
       dbRef.child(listId).remove();
+   }
+
+   const removeActiveListItem = (listItem) => {
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`)
+      dbRef.child(listItem).remove();
+      console.log(listItem)
    }
 
    function changeActiveList(list) {
@@ -126,8 +128,6 @@ function App() {
       const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`);
       dbRef.set(listItem)
       console.log(listItem);
-
-      // setActiveListItems([...activeListItems, listItem])
    }
 
    function addToWatchList() {
@@ -141,14 +141,12 @@ function App() {
 
    const submitForm = (e, searchTerm) => {
       e.preventDefault();
-      // dbRef.push(search);
       let searchWord = search;
 
       if (searchTerm) {
          setSearch(searchTerm);
          searchWord = searchTerm;
       }
-      // console.log(searchWord);
 
       const ticketMasterUrl = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
       const ticketMasterKey = "LTtkh2NXZOyGcG6HGOASJH8KgZ4JiKGX"
@@ -156,7 +154,7 @@ function App() {
       ticketMasterUrl.search = new URLSearchParams({
          apikey: ticketMasterKey,
          keyword: searchWord,
-         size: 5
+         size: 10
       })
 
       fetch(ticketMasterUrl)
@@ -167,10 +165,8 @@ function App() {
          })
          .catch(data => {
             filterEvents(data);
-            // setEvents([]);
             console.log("not found");
          })
-      // setSearch("");
    };
 
    //in case we need to filter events (by price, selected image etc. before displaying on the page)
@@ -190,10 +186,6 @@ function App() {
             const venueName = event._embedded.venues[0].name;
             const country = event._embedded.venues[0].country.countryCode;
             const city = event._embedded.venues[0].city.name;
-            // const button = {
-            //    button: addToActiveList,
-            //    text: `Add to ${activeList} list`
-            // }
 
             const key = `${userName + event.id}`;
 
@@ -225,11 +217,6 @@ function App() {
       } else {
          const name = "No events found. Would you like to add to watch-list to search later?";
 
-         // const button = {
-         //    button: addToWatchList,
-         //    text: `Add to watch list`
-         // }
-
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
 
          const event = [{ name, image }]
@@ -247,7 +234,7 @@ function App() {
             nameState.push({ key: key, name: data[key] })
          }
          setUserLists(nameState);
-         // console.log(userLists)
+
       })
    }, [])
 
@@ -258,7 +245,6 @@ function App() {
 
    const onChange = (e) => {
       e.preventDefault();
-      console.log(e.target.value)
       setCreateList(e.target.value);
    }
 
@@ -267,90 +253,99 @@ function App() {
    return (
       <Router>
          <div className="App">
-            <Search
-               submitForm={submitForm}
-               value={search}
-               searchQuery={searchQuery}
-            />
+            <header>
+               <h1 className="wrapper" >CONCERT ACCOUNTANT</h1>
+               <h2>Search For Events and Make YOUR LIST</h2>
+               <Search
+                  submitForm={submitForm}
+                  value={search}
+                  searchQuery={searchQuery}
+               />
 
-            <UserNameForm
-               userNameInput={userNameInput}
-               userNameTemplate={userNameTemplate}
-               button={setUserNameButton}
-            />
+            </header>
 
-            <AddLists
-               value={createList}
-               submitList={() => changeActiveList(createList)}
-               onChange={onChange}
-            />
+            <main>
+               <aside className="userForm">
+                  <h3>Create Your Lists</h3>
 
-            <div>
+
+                  <UserNameForm
+                     userNameInput={userNameInput}
+                     userNameTemplate={userNameTemplate}
+                     button={setUserNameButton}
+                  />
+
+                  <AddLists
+                     value={createList}
+                     submitList={() => changeActiveList(createList)}
+                     onChange={onChange}
+                     number={createList}
+                     updateNumber={onChange}
+
+                  />
+
+                  <ul>
+                     <h4>{`User logged in: ${userName}`}</h4>
+                     {
+                        usersLists.map(list => {
+                           return (
+                              <li>
+                                 <button onClick={() => { changeActiveList(list) }}>
+                                    <Link to="/list">{list}</Link>
+                                 </button>
+                              </li>
+                           )
+                        })
+                     }
+                  </ul>
+
+                  <Route exact path="/list">
+                     <DisplayEvents
+                        remove={removeActiveListItem}
+                        events={activeListItems}
+                        displayType="listItems"
+                     />
+                  </Route>
+
+                  <ol>
+                     <p className="yourWatchlist">Your Watchlist</p>
+                     <WatchList
+                        saveList={watchList}
+                        remove={removeWatchListItem}
+                        searchList={submitForm} />
+                  </ol>
+
+                  <div className="allListForm">
+                     <h4>Check Out Other User Lists!</h4>
+                     <select name="" id="">
+                        {userLists.map((name) => {
+                           return (
+                              <option key={name.key}
+                                 onClick={(e) => {
+                                    e.preventDefault()
+                                    setUserNameTemplate(`${name.key}`);
+                                    setUserNameButton();
+                                 }}
+                              >
+                                 {name.key}
+                              </option>
+                           );
+                        })}
+                     </select>
+                  </div>
+               </aside>
+
                <ul>
-                  {userLists.map((name) => {
-                     return (
-                        <li key={name.key}>
-                           <p
-                              //bug - have to click
-                              onClick={(e) => {
-                                 e.preventDefault();
-                                 // setUserName(`${name.key}`);
-                                 setUserNameTemplate(`${name.key}`);
-                                 setUserNameButton();
-                              }}
-                           >
-                              {name.key}
-                           </p>
-                        </li>
-                     );
-                  })}
+                  <DisplayEvents
+                     events={events}
+                     displayType="searchResults"
+                     activeList={activeList}
+                     button={{ addToActiveList, addToWatchList }}
+                  />
                </ul>
-            </div>
-
-            <ol>
-               <WatchList
-                  saveList={watchList}
-                  remove={removeListItem}
-                  searchList={submitForm} />
-            </ol>
-
-            {/* <ul>
-               <DisplayEvents
-                  events={activeListItems}
-                  displayType="listItems"
-               />
-            </ul> */}
-
-            <ul>
-               {
-                  usersLists.map(list => {
-                     return (
-                        <li>
-                           <button onClick={() => { changeActiveList(list) }}>
-                              <Link to="/list">{list}</Link>
-                           </button>
-                        </li>
-                     )
-                  })
-               }
-            </ul>
-
-            <Route exact path="/list">
-               <DisplayEvents
-                  events={activeListItems}
-                  displayType="listItems"
-               />
-            </Route>
-
-            <ul>
-               <DisplayEvents
-                  events={events}
-                  displayType="searchResults"
-                  activeList={activeList}
-                  button={{ addToActiveList, addToWatchList }}
-               />
-            </ul>
+            </main>
          </div>
+
       </Router>
    );
 }
