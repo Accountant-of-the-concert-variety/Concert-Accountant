@@ -8,7 +8,7 @@ const UserNameForm = ({ userNameInput, value, button }) => {
         <input
           className="name"
           type="text"
-          placeholder="enter user name"
+          placeholder="Enter user name"
           value={value}
           onChange={userNameInput}
         />
