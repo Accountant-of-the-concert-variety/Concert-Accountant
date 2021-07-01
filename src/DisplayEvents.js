@@ -1,6 +1,6 @@
 import './App.css';
 
-function DisplayEvents({ events, displayType, activeList, button, remove}) {
+function DisplayEvents({ events, displayType, activeList, button, remove }) {
    const domButton = {};
 
    const eventItems = events.map((event) => {
@@ -25,7 +25,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove}) {
             return null;
          }
       };
-      
+
       let eventVenue = () => {
          if (venue) {
             return (
@@ -50,7 +50,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove}) {
       if (displayType === "searchResults") {
          if (type === "event") {
             domButton.button = button.addToActiveList;
-            domButton.text = `Add to ${activeList} list`;
+            domButton.text = `Add to "${activeList}" list`;
             console.log("adding to my list");
          } else {
             domButton.button = button.addToWatchList;
@@ -84,7 +84,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove}) {
          );
       } else if (displayType === "listItems") {
          displayItem = (
-            
+
             <div>
                <h4>{activeList}</h4>
                <li className="activeListItem" key={`listItem${key}`}>
@@ -102,7 +102,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove}) {
       return displayItem;
    });
 
-   return <>{eventItems}</>;
+   return (eventItems);
 }
 
 export default DisplayEvents;

@@ -1,4 +1,4 @@
-const Search = ({ submitForm, search, searchQuery }) => {
+const Search = ({ submitForm, value, searchQuery }) => {
    return (
       <form onSubmit={submitForm}>
          <label className="sr-only" htmlFor="searchEvent">Search for an event</label>
@@ -6,7 +6,7 @@ const Search = ({ submitForm, search, searchQuery }) => {
             className="search"
             type="search"
             placeholder="Search for an event.."
-            value={search}
+            value={value}
             onChange={searchQuery}
          />
       </form>

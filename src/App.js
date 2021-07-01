@@ -45,7 +45,7 @@ function App() {
    console.log(userName);
 
 
-// USERNAME FORM
+   // USERNAME FORM
    const userNameInput = (e) => {
       e.preventDefault();
       setUserNameTemplate(e.target.value)
@@ -59,7 +59,7 @@ function App() {
    }
 
 
-// CREATE LIST FORM
+   // CREATE LIST FORM
    const createLists = () => {
       console.log(userNameTemplate);
       const dbRef = firebase.database().ref(`${userNameTemplate}/lists`);
@@ -70,7 +70,7 @@ function App() {
          let lists = [];
 
          for (const list in response.val()) {
-            if (list != "watchList") {
+            if (list !== "watchList") {
                lists.push(list);
             }
             updateUserLists(list);
@@ -108,18 +108,13 @@ function App() {
 
    useEffect(() => {
       updateUserLists(activeList);
+      // eslint-disable-next-line
    }, [activeList])
-
-   const submitList = (e) => {
-      e.preventDefault();
-      setActiveList(createList);
-   }
 
    const onChange = (e) => {
       e.preventDefault();
       setCreateList(e.target.value)
    }
-
 
    // REMOVE BUTTONS
    const removeActiveListItem = (listItem) => {
@@ -133,7 +128,7 @@ function App() {
    }
 
 
-// ACTIVE LIST BUTTON
+   // ACTIVE LIST BUTTON
    function changeActiveList(list) {
       console.log(list);
       setActiveList(list);
@@ -141,7 +136,7 @@ function App() {
    }
 
 
-// ADD BUTTONS
+   // ADD BUTTONS
    function addToActiveList(listItem) {
       const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name.replace(/[^a-zA-Z0-9 ]/g, "")}`);
       dbRef.set(listItem)
@@ -152,7 +147,7 @@ function App() {
       dbRef.push(search);
    }
 
-// SEARCH FORM
+   // SEARCH FORM
    const searchQuery = (e) => {
       setSearch(e.target.value);
    };
@@ -189,7 +184,7 @@ function App() {
    };
 
 
-// FILTERED DATA
+   // FILTERED DATA
    //in case we need to filter events (by price, selected image etc. before displaying on the page)
    function filterEvents(jsonData) {
       let events = [];
@@ -257,25 +252,33 @@ function App() {
       })
    }, [])
 
+   // const submitList = (e) => {
+   //    e.preventDefault();
+   //    setActiveList(createList);
+   // }
 
+
+
+   console.log(activeListItems);
 
    return (
       <Router>
          <div className="App">
             <header>
-               <h1 className = "wrapper" >CONCERT ACCOUNTANT</h1>
+               <h1 className="wrapper" >CONCERT ACCOUNTANT</h1>
                <h2>Search For Events and Make YOUR LIST</h2>
                <Search
                   submitForm={submitForm}
                   value={search}
                   searchQuery={searchQuery}
                />
-   
+
             </header>
 
             <main>
-               <aside className = "userForm">
+               <aside className="userForm">
                   <h3>Create Your Lists</h3>
+
                   <UserNameForm
                      userNameInput={userNameInput}
                      userNameTemplate={userNameTemplate}
@@ -284,10 +287,9 @@ function App() {
 
                   <AddLists
                      value={createList}
+                     submitList={() => changeActiveList(createList)}
                      onChange={onChange}
-                     submitList={submitList}
                   />
-                  <p>{onChange}</p>
 
                   <ul>
                      <h4>{`User logged in: ${userName}`}</h4>
@@ -317,40 +319,41 @@ function App() {
                      <WatchList
                         saveList={watchList}
                         remove={removeWatchListItem}
-                        searchList={submitForm} />
+                        searchList={submitForm}
+                     />
                   </ol>
 
-                  <div className = "allListForm">
+                  <div className="allListForm">
                      <h4>Check Out Other User Lists!</h4>
                      <select name="" id="">
-                           {userLists.map((name) => {
-                              return (
-                                 <option key={name.key}
-                                    onClick={(e) => {
-                                       e.preventDefault()
-                                       setUserNameTemplate(`${name.key}`);
-                                       setUserNameButton();
-                                    }}
-                                 >
-                                    {name.key}
-                                 </option>
-                              );
-                           })}
+                        {userLists.map((name) => {
+                           return (
+                              <option key={name.key}
+                                 onClick={(e) => {
+                                    e.preventDefault()
+                                    setUserNameTemplate(`${name.key}`);
+                                    setUserNameButton();
+                                 }}
+                              >
+                                 {name.key}
+                              </option>
+                           );
+                        })}
                      </select>
                   </div>
                </aside>
 
-            <ul>
-               <DisplayEvents
-                  events={events}
-                  displayType="searchResults"
-                  activeList={activeList}
-                  button={{ addToActiveList, addToWatchList }}
-               />
-            </ul>
+               <ul>
+                  <DisplayEvents
+                     events={events}
+                     displayType="searchResults"
+                     activeList={activeList}
+                     button={{ addToActiveList, addToWatchList }}
+                  />
+               </ul>
             </main>
          </div>
-         
+
       </Router>
    );
 }

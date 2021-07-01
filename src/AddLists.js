@@ -20,6 +20,9 @@ const AddLists = ({ submitList, value, onChange }) => {
                value={value.budget}
                onChange={onChange}/>
          </div>
+
+         <button>Create List</button>
+         
       </form>
    );
 };
