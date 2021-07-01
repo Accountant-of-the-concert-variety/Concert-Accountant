@@ -19,6 +19,7 @@
 import './App.css';
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import Footbar from './Footbar.js'
 import DisplayEvents from './DisplayEvents';
 import Search from './Search';
 import WatchList from './WatchList';
@@ -307,13 +308,12 @@ function App() {
             <header>
                <h1 className="wrapper" >CONCERT ACCOUNTANT</h1>
                <h2>Search For Events and Make YOUR LIST</h2>
-               <Search
-                  submitForm={submitForm}
-                  value={search}
-                  searchQuery={searchQuery}
-               />
-
             </header>
+            <Search
+               submitSearch={submitForm}
+               value={search}
+               onChange={searchQuery}
+            />
 
             <main>
                <aside className="userForm">
@@ -321,7 +321,7 @@ function App() {
 
                   <UserNameForm
                      userNameInput={userNameInput}
-                     userNameTemplate={userNameTemplate}
+                     value={userNameTemplate}
                      button={setUserNameButton}
                   />
 
@@ -392,8 +392,8 @@ function App() {
                   />
                </ul>
             </main>
+            <Footbar/>
          </div>
-
       </Router>
    );
 }

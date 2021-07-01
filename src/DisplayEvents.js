@@ -1,4 +1,4 @@
-import './App.css';
+import "./App.css";
 
 function DisplayEvents({ events, displayType, activeList, button, remove }) {
    const domButton = {};
@@ -7,7 +7,12 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
       const { type, name, image, date, venue, price, key } = event;
 
       const eventName = <p className="eventName">{name}</p>;
-      const eventDate = <p><i className="far fa-calendar-times"></i>{date}</p>;
+      const eventDate = (
+         <p>
+            <i className="far fa-calendar-times"></i>
+            {date}
+         </p>
+      );
       const eventPrice = () => {
          if (price) {
             let domPrice = (
@@ -51,16 +56,16 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
          if (type === "event") {
             domButton.button = button.addToActiveList;
             domButton.text = `Add to "${activeList}" list`;
-            // console.log("adding to my list");
+            console.log("adding to my list");
          } else {
             domButton.button = button.addToWatchList;
             domButton.text = `Add to watch list`;
-            // console.log("adding to watch list");
+            console.log("adding to watch list");
          }
 
          displayItem = (
             <li className="searchResult" key={`searchResults${key}`}>
-               {/* {console.log("rerender")} */}
+               {console.log("rerender")}
 
                <div className="flex-container">
                   <div className="image-container">{eventImage}</div>
@@ -70,21 +75,20 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
                      {eventVenue()}
                      {eventPrice()}
 
-                     <button className="btn btn-2 btn-2g"
+                     <button
+                        className="btn btn-2 btn-2g"
                         onClick={() => {
                            domButton.button(event);
                         }}
                      >
                         {domButton.text}
                      </button>
-
                   </div>
                </div>
             </li>
          );
       } else if (displayType === "listItems") {
          displayItem = (
-
             <div>
                <h4>{activeList}</h4>
                <li className="activeListItem" key={`listItem${key}`}>
@@ -96,13 +100,12 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
                </li>
                <button onClick={() => remove(event)}>x</button>
             </div>
-
          );
       }
       return displayItem;
    });
 
-   return (eventItems);
+   return eventItems;
 }
 
 export default DisplayEvents;
