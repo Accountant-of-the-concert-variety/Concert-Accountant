@@ -44,11 +44,12 @@ function App() {
    console.log("search = " + search);
    console.log(userName);
 
+
+// USERNAME FORM
    const userNameInput = (e) => {
       e.preventDefault();
       setUserNameTemplate(e.target.value)
    }
-
    const setUserNameButton = (e) => {
       if (e) {
          e.preventDefault();
@@ -57,6 +58,8 @@ function App() {
       createLists();
    }
 
+
+// CREATE LIST FORM
    const createLists = () => {
       console.log(userNameTemplate);
       const dbRef = firebase.database().ref(`${userNameTemplate}/lists`);
@@ -76,6 +79,7 @@ function App() {
          setUsersLists(lists);
       })
    }
+
 
    function updateUserLists(list) {
       console.log(list);
@@ -106,34 +110,49 @@ function App() {
       updateUserLists(activeList);
    }, [activeList])
 
+   const submitList = (e) => {
+      e.preventDefault();
+      setActiveList(createList);
+   }
+
+   const onChange = (e) => {
+      e.preventDefault();
+      setCreateList(e.target.value)
+   }
+
+
+   // REMOVE BUTTONS
+   const removeActiveListItem = (listItem) => {
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`)
+      dbRef.remove();
+      console.log(listItem)
+   }
    const removeWatchListItem = (listId) => {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList/events`);
       dbRef.child(listId).remove();
    }
 
-   const removeActiveListItem = (listItem) => {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`)
-      dbRef.child(listItem).remove();
-      console.log(listItem)
-   }
 
+// ACTIVE LIST BUTTON
    function changeActiveList(list) {
       console.log(list);
       setActiveList(list);
       updateUserLists(list)
    }
 
+
+// ADD BUTTONS
    function addToActiveList(listItem) {
-      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name}`);
+      const dbRef = firebase.database().ref(`${userName}/lists/${activeList}/events/${listItem.name.replace(/[^a-zA-Z0-9 ]/g, "")}`);
       dbRef.set(listItem)
       console.log(listItem);
    }
-
    function addToWatchList() {
-      const dbRef = firebase.database().ref(`${userName}/lists/watchList`);
+      const dbRef = firebase.database().ref(`${userName}/lists/watchList/events`);
       dbRef.push(search);
    }
 
+// SEARCH FORM
    const searchQuery = (e) => {
       setSearch(e.target.value);
    };
@@ -164,10 +183,13 @@ function App() {
          })
          .catch(data => {
             filterEvents(data);
+            addToWatchList(data);
             console.log("not found");
          })
    };
 
+
+// FILTERED DATA
    //in case we need to filter events (by price, selected image etc. before displaying on the page)
    function filterEvents(jsonData) {
       let events = [];
@@ -205,7 +227,6 @@ function App() {
                   max: event.priceRanges[0].max
                }
             }
-
             //update this to choose smallest image. Right now its just the first one
             const image = event.images[0].url;
 
@@ -233,20 +254,9 @@ function App() {
             nameState.push({ key: key, name: data[key] })
          }
          setUserLists(nameState);
-
       })
    }, [])
 
-   const submitList = (e) => {
-      e.preventDefault();
-      setActiveList(createList);
-
-   }
-
-   const onChange = (e) => {
-      e.preventDefault();
-      setCreateList(e.target.value);
-   }
 
 
    return (
@@ -274,12 +284,10 @@ function App() {
 
                   <AddLists
                      value={createList}
-                     submitList={submitList}
                      onChange={onChange}
-                     number = {createList}
-                     updateNumber = {onChange}
-
+                     submitList={submitList}
                   />
+                  <p>{onChange}</p>
 
                   <ul>
                      <h4>{`User logged in: ${userName}`}</h4>
@@ -298,7 +306,7 @@ function App() {
 
                   <Route exact path="/list">
                      <DisplayEvents
-                        remove = {removeActiveListItem}
+                        remove={removeActiveListItem}
                         events={activeListItems}
                         displayType="listItems"
                      />
