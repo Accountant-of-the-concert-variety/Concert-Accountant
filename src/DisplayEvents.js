@@ -1,13 +1,13 @@
 import './App.css';
 
-function DisplayEvents({ events, displayType, activeList, button, remove}) {
+function DisplayEvents({ events, displayType, activeList, button, remove }) {
    const domButton = {};
 
    const eventItems = events.map((event) => {
       const { type, name, image, date, venue, price, key } = event;
 
-      const eventName = <p class="eventName">{name}</p>;
-      const eventDate = <p><i class="far fa-calendar-times"></i>{date}</p>;
+      const eventName = <p className="eventName">{name}</p>;
+      const eventDate = <p><i className="far fa-calendar-times"></i>{date}</p>;
       const eventPrice = () => {
          if (price) {
             let domPrice = (
@@ -25,17 +25,17 @@ function DisplayEvents({ events, displayType, activeList, button, remove}) {
             return null;
          }
       };
-      
+
       let eventVenue = () => {
          if (venue) {
             return (
                <div>
                   <p>
-                     <i class="fas fa-location-arrow"></i>
+                     <i className="fas fa-location-arrow"></i>
                      {venue.name}
                   </p>
                   <p>
-                     <i class="far fa-flag"></i>
+                     <i className="far fa-flag"></i>
                      {venue.city}, {venue.country}
                   </p>
                </div>
@@ -50,7 +50,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove}) {
       if (displayType === "searchResults") {
          if (type === "event") {
             domButton.button = button.addToActiveList;
-            domButton.text = `Add to ${activeList} list`;
+            domButton.text = `Add to "${activeList}" list`;
             console.log("adding to my list");
          } else {
             domButton.button = button.addToWatchList;
@@ -84,25 +84,25 @@ function DisplayEvents({ events, displayType, activeList, button, remove}) {
          );
       } else if (displayType === "listItems") {
          displayItem = (
+
             <div>
-               
-            <li className="activeListItem" key={`listItem${key}`}>
-               <div>
-                  {eventName}
-                  {eventPrice()}
-               </div>
-               {eventImage}
-            </li>
-               <button onClick={() => remove(displayType)}>x</button>
-            
+               <h4>{activeList}</h4>
+               <li className="activeListItem" key={`listItem${key}`}>
+                  <div>
+                     {eventName}
+                     {eventPrice()}
+                  </div>
+                  {eventImage}
+               </li>
+               <button onClick={() => remove(event)}>x</button>
             </div>
+
          );
       }
-      // console.log(eventName.key)
       return displayItem;
    });
 
-   return <>{eventItems}</>;
+   return (eventItems);
 }
 
 export default DisplayEvents;
