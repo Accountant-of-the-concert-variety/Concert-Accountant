@@ -80,7 +80,6 @@ function App() {
       })
    }
 
-
    function updateUserLists(list) {
       console.log(list);
       const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}/events`);
