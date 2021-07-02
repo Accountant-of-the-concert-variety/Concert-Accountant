@@ -20,11 +20,12 @@ padding: 0;
 width: 100%;
 height: 100%;
 min-height: 100vh;
+background-color: #DBF0EF;
 }
 
 .wrapper {
-   max-width: 1140px;
-   width: 90%;
+   max-width: 1440px;
+   width: 85%;
    margin: 0 auto;
 }
 
@@ -43,27 +44,27 @@ p, li, button {
 
  /* HEADER */ 
 header {
-    background-image: linear-gradient(to top, #aed8e3 0%, #48a6bb 100%);
-    background-blend-mode: soft-light;
-    background-color: #48a6bb;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    margin: 0 auto;
-    text-align: center;
-    position: relative;
-    background-image: url(https://www.premiumseatsusa.com/special-events/wp-content/uploads/2016/09/concert-crowd-862211.jpg);
+   background-image: linear-gradient(to top, #aed8e3 0%, #48a6bb 100%);
+   background-blend-mode: soft-light;
+   background-color: #48a6bb;
+   background-repeat: no-repeat;
+   background-size: cover;
+   background-position: center;
+   margin: 0 auto;
+   text-align: center;
+   position: relative;
+   background-image: url(https://www.premiumseatsusa.com/special-events/wp-content/uploads/2016/09/concert-crowd-862211.jpg);
 }
 header::before,
 header::after {
-    content: '';
-    position: absolute;
-    height: 300px;
-    bottom: -140px;
-    right: 0;
-    left: 0;
-    background: white;
-    transform: skewY(-4deg);
+   content: '';
+   position: absolute;
+   height: 300px;
+   bottom: -140px;
+   right: 0;
+   left: 0;
+   background: white;
+   transform: skewY(-4deg);
 
 }
 header h1 {
@@ -110,6 +111,7 @@ input[type=search]:focus {
 main {
     display: flex;
     flex-direction: row;
+    background-color: white;
 }
 img {
   width: 450px;
@@ -224,11 +226,6 @@ i {
 
 
 /* USER FORM */
-aside {
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-}
 
 .userForm {
 max-width: 400px;

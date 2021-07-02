@@ -36,6 +36,8 @@ function App() {
    const [activeListItems, setActiveListItems] = useState([]);
 
    const [watchList, setWatchList] = useState([]);
+   const [displayWatchList, setDispayWatchList] = useState(false);
+
    const [createList, setCreateList] = useState({ name: "", budget: "" });
 
    const [userName, setUserName] = useState("");
@@ -304,7 +306,7 @@ function App() {
 
    return (
       <Router>
-         <div className="App">
+         <div className="App wrapper">
             <header>
                <h1 className="wrapper" >CONCERT ACCOUNTANT</h1>
                <h2>Search For Events and Make YOUR LIST</h2>
@@ -338,7 +340,7 @@ function App() {
                            return (
                               <li>
                                  <button onClick={(e) => { changeActiveList(list.name, e) }}>
-                                    <Link to="/list">{list.name + list.budget}</Link>
+                                    <Link to="/list">{`${list.name}  $${list.budget}`}</Link>
                                  </button>
                               </li>
                            )
@@ -354,14 +356,20 @@ function App() {
                      />
                   </Route>
 
-                  <ol>
-                     <p className="yourWatchlist">Your Watchlist</p>
-                     <WatchList
-                        saveList={watchList}
-                        remove={removeWatchListItem}
-                        searchList={submitForm}
-                     />
-                  </ol>
+                  <aside className="cornerPiece">
+                     <button onClick={() => {
+                        setDispayWatchList(!displayWatchList)
+                     }}>WATCHLIST</button>
+                     {displayWatchList ? <ol>
+                        <p className="yourWatchlist">{userName} saved for later</p>
+                        <WatchList
+                           saveList={watchList}
+                           remove={removeWatchListItem}
+                           searchList={submitForm}
+                        />
+                     </ol> : null}
+
+                  </aside>
 
                   <div className="allListForm">
                      <h4>Check Out Other User Lists!</h4>
