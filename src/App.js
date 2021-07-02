@@ -309,8 +309,9 @@ function App() {
          <div className="App wrapper">
             <header>
                <h1 className="wrapper" >CONCERT ACCOUNTANT</h1>
-               <h2>Search For Events and Make YOUR LIST</h2>
+               <h2>Planning that one summer roadtrip? Set up a list and see what works for you. Create a list with your budgeted amount and add events in the area! </h2>
             </header>
+            <Description />
             <Search
                submitSearch={submitForm}
                value={search}
