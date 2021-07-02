@@ -89,8 +89,8 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
          );
       } else if (displayType === "listItems") {
          displayItem = (
-            <div>
-               <h4>{activeList}</h4>
+            <div className ="eventObject" >
+               <button onClick={() => remove(event)}>&times;</button>
                <li className="activeListItem" key={`listItem${key}`}>
                   <div>
                      {eventName}
@@ -98,7 +98,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
                   </div>
                   {eventImage}
                </li>
-               <button onClick={() => remove(event)}>x</button>
+               
             </div>
          );
       }
