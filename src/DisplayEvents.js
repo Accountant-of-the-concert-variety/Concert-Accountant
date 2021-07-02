@@ -61,12 +61,12 @@ function DisplayEvents({ events, displayType, activeList, button, search, userNa
             domButton.text = `Add to watch list`;
          }
 
-         if(allListsCount === 0) {
-            domButton.text = `Please add a new list`
-         }
-
          if(!userName) {
             domButton.text = `Please sign in first`
+         } else if(allListsCount === 0) {
+            domButton.text = `Please add a new list`
+         } else if(!activeList) {
+            domButton.text = 'Please select a list'
          }
 
          displayItem = (
@@ -98,7 +98,7 @@ function DisplayEvents({ events, displayType, activeList, button, search, userNa
          displayItem = (
             <div>
                <h4>{activeList}</h4>
-               <li className="activeListItem" key={`${activeList}-${key}`}>
+               <li className="activeListItem" key={`${userName}${activeList}-${key}`}>
                   <div>
                      {eventName}
                      {eventPrice()}

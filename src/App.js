@@ -67,14 +67,18 @@ function App() {
          firebaseRef.off();
       }
 
+      setAllLists([])
+
       setWatchList([]);
-      setActiveListItems([]);
    }
 
    useEffect(() => {
       if (!firebaseVal) {
          return;
       }
+
+      setWatchList([]);
+      setActiveListItems([]);
 
       let lists = [];
 
@@ -97,6 +101,8 @@ function App() {
 
          const newState = [];
 
+         console.log(list);
+
          if (list === "watchList") {
             for (let key in newData) {
                newState.push({ key: key, name: newData[key] });
@@ -114,61 +120,7 @@ function App() {
       }
    }, [setAllLists, firebaseVal, activeList])
 
-
-
-   // CREATE LIST FORM
-   // const createLists = () => {
-   //    // console.log(userNameTemplate);
-   //    // const dbRef = firebaseRef.child(`${userNameTemplate}/lists`);
-   //    const dbRef = firebaseRef.child(`/lists`);
-   //    // setWatchList([]);
-   //    // setActiveListItems([]);
-
-   //    dbRef.on("value", response => {
-   //       let lists = [];
-
-   //       for (const list in response.val()) {
-   //          if (list !== "watchList") {
-   //             lists.push({ name: list, budget: response.val()[list].budget });
-   //          }
-   //          updateUserLists(list);
-   //       }
-
-
-   //       setAllLists(lists);
-   //    })
-   // }
-
-
-   // function updateUserLists(list) {
-   //    // console.log(list);
-   //    const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}/events`);
-
-   //    dbRef.on("value", (response) => {
-   //       const newState = [];
-   //       const data = response.val();
-
-   //       if (list === "watchList") {
-   //          for (let key in data) {
-   //             newState.push({ key: key, name: data[key] });
-   //          }
-
-   //          setWatchList(newState);
-
-   //       } else if (list === activeList) {
-   //          for (const key in data) {
-   //             newState.push(data[key])
-   //          }
-
-   //          setActiveListItems(newState);
-   //       }
-   //    });
-   // }
-
-   // useEffect(() => {
-   //    updateUserLists(activeList);
-   //    // eslint-disable-next-line
-   // }, [activeList])
+   
 
    function submitNewList(list, e) {
       e.preventDefault();
@@ -248,6 +200,10 @@ function App() {
       }
       if (allLists.length === 0) {
          return
+      }
+
+      if(!activeList) {
+         return;
       }
 
       console.log(list, item);
@@ -379,9 +335,9 @@ function App() {
       dbRef.on('value', (response) => {
          setFirebaseVal(response.val());
 
-         if (response.val()) {
-            changeActiveList(Object.keys(response.val().lists)[0])
-         }
+         // if (response.val()) {
+         //    changeActiveList(Object.keys(response.val().lists)[0])
+         // }
 
          console.log("updating firebase location")
       })
@@ -442,7 +398,7 @@ function App() {
                      {
                         allLists.map(list => {
                            return (
-                              <li key={list.name}>
+                              <li key={`${userName}${list.name}`}>
                                  <button onClick={() => { changeActiveList(list.name) }}>
                                     <Link to="/list">{list.name + list.budget}</Link>
                                  </button>
@@ -457,7 +413,7 @@ function App() {
                         events={activeListItems}
                         displayType="listItems"
                         // key={`listItems${Math.random()}`}
-                        key={"listItems"}
+                        key={`${userName}listItems`}
                         activeList={activeList}
                         button={removeFromLists}
                      />
