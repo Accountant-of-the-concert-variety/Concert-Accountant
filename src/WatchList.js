@@ -4,7 +4,7 @@ function WatchList(props) {
    return (
       saveList.map(list => {
          return (
-            <li key={list.key} className="watchList">
+            <li key={"watchList" + list.key} className="watchList">
                <p onClick={(e) => searchList(e, list.name)} className="watchListItem">
                   {list.name}
                </p>

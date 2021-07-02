@@ -358,10 +358,11 @@ function App() {
          setEvents(eventList);
       } else {
          const name = "No events found. Would you like to add to watch-list to search later?";
+         const key = "noResults"
 
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
 
-         const event = [{ name, image }]
+         const event = [{ name, image, key }]
 
          setEvents(event);
       }
