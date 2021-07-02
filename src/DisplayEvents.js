@@ -1,6 +1,6 @@
 import "./App.css";
 
-function DisplayEvents({ events, displayType, activeList, button, search, userName }) {
+function DisplayEvents({ events, displayType, activeList, button, search, userName, allListsCount }) {
    const domButton = {};
 
    const eventItems = events.map((event) => {
@@ -61,12 +61,16 @@ function DisplayEvents({ events, displayType, activeList, button, search, userNa
             domButton.text = `Add to watch list`;
          }
 
+         if(allListsCount === 0) {
+            domButton.text = `Please add a new list`
+         }
+
          if(!userName) {
             domButton.text = `Please sign in first`
          }
 
          displayItem = (
-            <li className="searchResult" key={`searchResults${key}`}>
+            <li className="searchResult" key={key}>
                {/* {console.log("rerender")} */}
 
                <div className="flex-container">
@@ -94,7 +98,7 @@ function DisplayEvents({ events, displayType, activeList, button, search, userNa
          displayItem = (
             <div>
                <h4>{activeList}</h4>
-               <li className="activeListItem" key={`listItem${key}`}>
+               <li className="activeListItem" key={`${activeList}-${key}`}>
                   <div>
                      {eventName}
                      {eventPrice()}

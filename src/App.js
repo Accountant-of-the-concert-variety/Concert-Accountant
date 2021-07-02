@@ -42,107 +42,186 @@ function App() {
    const [userNameTemplate, setUserNameTemplate] = useState("")
    const [allUsers, setAllUsers] = useState([]);
 
-   const [firebaseRef, setFirebaseRef] = useState({});
+   const [firebaseRef, setFirebaseRef] = useState();
    const [firebaseVal, setFirebaseVal] = useState({});
-
-   // console.log("search = " + search);
-   // console.log(userName);
 
 
    // USERNAME FORM
    const userNameInput = (e) => {
-      e.preventDefault();
       setUserNameTemplate(e.target.value)
    }
-   const setUserNameButton = (e) => {
+   const setUserNameButton = (e, specificUserName) => {
       if (e) {
          e.preventDefault();
       }
-      setUserName(userNameTemplate);
-      createLists();
-   }
 
+      let newUserName = userNameTemplate;
 
-   // CREATE LIST FORM
-   const createLists = () => {
-      console.log(userNameTemplate);
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists`);
+      if (specificUserName) {
+         newUserName = specificUserName;
+      }
+
+      setUserName(newUserName);
+
+      if (firebaseRef) {
+         firebaseRef.off();
+      }
+
       setWatchList([]);
       setActiveListItems([]);
-
-      dbRef.on("value", response => {
-         let lists = [];
-
-         for (const list in response.val()) {
-            if (list !== "watchList") {
-               lists.push({ name: list, budget: response.val()[list].budget });
-            }
-            updateUserLists(list);
-         }
-
-
-         setAllLists(lists);
-      })
    }
 
+   useEffect(() => {
+      if (!firebaseVal) {
+         return;
+      }
 
-   function updateUserLists(list) {
-      // console.log(list);
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}/events`);
+      let lists = [];
 
-      dbRef.on("value", (response) => {
+      console.log(firebaseVal);
+
+      const data = firebaseVal.lists;
+
+      for (const list in data) {
+         if (list !== "watchList") {
+            lists.push({ name: list, budget: data[list].budget });
+         }
+         updateUserLists(list);
+      }
+
+      setAllLists(lists);
+
+      function updateUserLists(list) {
+
+         const newData = firebaseVal.lists[list].events;
+
          const newState = [];
-         const data = response.val();
 
          if (list === "watchList") {
-            for (let key in data) {
-               newState.push({ key: key, name: data[key] });
+            for (let key in newData) {
+               newState.push({ key: key, name: newData[key] });
             }
 
             setWatchList(newState);
 
          } else if (list === activeList) {
-            for (const key in data) {
-               newState.push(data[key])
+            for (const key in newData) {
+               newState.push(newData[key])
             }
 
             setActiveListItems(newState);
          }
-      });
-   }
+      }
+   }, [setAllLists, firebaseVal, activeList])
 
-   useEffect(() => {
-      updateUserLists(activeList);
-      // eslint-disable-next-line
-   }, [activeList])
+
+
+   // CREATE LIST FORM
+   // const createLists = () => {
+   //    // console.log(userNameTemplate);
+   //    // const dbRef = firebaseRef.child(`${userNameTemplate}/lists`);
+   //    const dbRef = firebaseRef.child(`/lists`);
+   //    // setWatchList([]);
+   //    // setActiveListItems([]);
+
+   //    dbRef.on("value", response => {
+   //       let lists = [];
+
+   //       for (const list in response.val()) {
+   //          if (list !== "watchList") {
+   //             lists.push({ name: list, budget: response.val()[list].budget });
+   //          }
+   //          updateUserLists(list);
+   //       }
+
+
+   //       setAllLists(lists);
+   //    })
+   // }
+
+
+   // function updateUserLists(list) {
+   //    // console.log(list);
+   //    const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}/events`);
+
+   //    dbRef.on("value", (response) => {
+   //       const newState = [];
+   //       const data = response.val();
+
+   //       if (list === "watchList") {
+   //          for (let key in data) {
+   //             newState.push({ key: key, name: data[key] });
+   //          }
+
+   //          setWatchList(newState);
+
+   //       } else if (list === activeList) {
+   //          for (const key in data) {
+   //             newState.push(data[key])
+   //          }
+
+   //          setActiveListItems(newState);
+   //       }
+   //    });
+   // }
+
+   // useEffect(() => {
+   //    updateUserLists(activeList);
+   //    // eslint-disable-next-line
+   // }, [activeList])
 
    function submitNewList(list, e) {
       e.preventDefault();
 
       console.log("trying");
-      if(!list.name) {
+      
+      if(!userName){
          return;
       }
-      
-      if(!list.budget) {
-         list.budget = 0;
+      if (!list.name) {
+         return;
       }
 
-      const dbRef = firebase.database().ref(`${userName}/lists/${list.name}/budget`);
+      if (!list.budget) {
+         list.budget = 0;
+      }
+      
+      firebaseRef.child(`/lists/${list.name}/budget`).set(list.budget);
 
-      dbRef.set(list.budget);
-
-      changeActiveList(list.name, e);
+      changeActiveList(list.name);
    }
 
    // ACTIVE LIST BUTTON
-   function changeActiveList(list, e) {
-      e.preventDefault(); //maybe remove
-
-      // console.log(list);
+   function changeActiveList(list) {
       setActiveList(list);
-      updateUserLists(list);
    }
+
+
+   // function changeListItems(list, item, type) {
+   //    if (!userName) {
+   //       return;
+   //    }
+   //    if (allLists.length === 0) {
+   //       return
+   //    }
+
+   //    console.log(list, item);
+
+   //    let title = item.title;
+
+   //    if (!item.title) {
+   //       title = item;
+   //       console.log(title);
+   //    }
+
+   //    const firebaseChild = firebaseRef.child(`/lists/${list}/events/${title}`);
+
+   //    if(type === "remove") {
+   //       firebaseChild.remove();
+   //    } else {
+   //       firebaseChild.set(item);
+   //    }
+   // }
 
 
    function removeFromLists(list, item) {
@@ -155,15 +234,20 @@ function App() {
          console.log(title);
       }
 
-      // firebaseRef.child(`${userName}/lists/${list}/events/${title}`).set(item);
+      firebaseRef.child(`/lists/${list}/events/${title}`).remove();
 
-      firebaseRef.child(`${userName}/lists/${list}/events/${title}`).remove();
+      // changeListItems(list, item, "remove")
    }
 
    function addToLists(list, item) {
 
-      if(!userName){
+      // changeListItems(list, item, "set")
+
+      if (!userName) {
          return;
+      }
+      if (allLists.length === 0) {
+         return
       }
 
       console.log(list, item);
@@ -174,29 +258,8 @@ function App() {
          console.log(title);
       }
 
-      firebaseRef.child(`${userName}/lists/${list}/events/${title}`).set(item);
+      firebaseRef.child(`/lists/${list}/events/${title}`).set(item);
    }
-
-
-   // REMOVE BUTTONS
-   const removeActiveListItem = (listItem) => {
-      removeFromLists(activeList, listItem);
-   }
-
-   const removeWatchListItem = (listId) => {
-      console.log(listId);
-      removeFromLists("watchList", listId);
-   }
-
-   // ADD BUTTONS
-   function addToActiveList(listItem) {
-      addToLists(activeList, listItem);
-   }
-   function addToWatchList() {
-      addToLists("watchList", search)
-   }
-
-
 
    // SEARCH FORM
    const searchQuery = (e) => {
@@ -227,11 +290,6 @@ function App() {
          }).then(jsonData => {
             filterEvents(jsonData);
          })
-         .catch(data => {
-            filterEvents(data);
-            addToWatchList(data);
-            console.log("not found");
-         })
    };
 
 
@@ -252,17 +310,33 @@ function App() {
             const name = event.name;
             const date = event.dates.start.localDate;
 
-            const venueName = event._embedded.venues[0].name;
-            const country = event._embedded.venues[0].country.countryCode;
-            const city = event._embedded.venues[0].city.name;
+            let venue = null;
+            let venueFile = [];
+            let venueName = "";
+            let country = "";
+            let city = "";
+
+            if (event._embedded) {
+               venueFile = event._embedded.venues[0];
+
+               if (venueFile.name)
+                  venueName = venueFile.name;
+
+               if (venueFile.country) {
+                  country = venueFile.country.countryCode;
+               }
+               if (venueFile.city) {
+                  city = venueFile.city.name;
+               }
+
+               venue = {
+                  name: venueName,
+                  city: city,
+                  country: country
+               }
+            }
 
             const key = `${userName + event.id}`;
-
-            const venue = {
-               name: venueName,
-               city: city,
-               country: country
-            }
 
             let price = {
                min: 0,
@@ -293,22 +367,37 @@ function App() {
       }
    }
 
-   // console.log(firebaseData);
-
    useEffect(() => {
-      const dbRef = firebase.database().ref();
+      if (!userName) {
+         return
+      }
+
+      const dbRef = firebase.database().ref(userName);
       setFirebaseRef(dbRef);
 
       dbRef.on('value', (response) => {
          setFirebaseVal(response.val());
+
+         if (response.val()) {
+            changeActiveList(Object.keys(response.val().lists)[0])
+         }
+
+         console.log("updating firebase location")
+      })
+      console.log("updating firebase useEffect")
+   }, [setFirebaseRef, userName])
+
+   useEffect(() => {
+      const dbRef = firebase.database().ref();
+
+      dbRef.once('value', (response) => {
          const nameState = []
          const data = response.val();
          for (let key in data) {
             nameState.push({ key: key, name: data[key] })
          }
          setAllUsers(nameState);
-         console.log("firebase updating")
-
+         console.log("firebase updating allUsers");
       })
    }, [])
 
@@ -353,7 +442,7 @@ function App() {
                         allLists.map(list => {
                            return (
                               <li key={list.name}>
-                                 <button onClick={(e) => { changeActiveList(list.name, e) }}>
+                                 <button onClick={() => { changeActiveList(list.name) }}>
                                     <Link to="/list">{list.name + list.budget}</Link>
                                  </button>
                               </li>
@@ -366,6 +455,8 @@ function App() {
                      <DisplayEvents
                         events={activeListItems}
                         displayType="listItems"
+                        // key={`listItems${Math.random()}`}
+                        key={"listItems"}
                         activeList={activeList}
                         button={removeFromLists}
                      />
@@ -389,7 +480,7 @@ function App() {
                                  onClick={(e) => {
                                     e.preventDefault()
                                     setUserNameTemplate(`${name.key}`);
-                                    setUserNameButton();
+                                    setUserNameButton(e, name.key);
                                  }}
                               >
                                  {name.key}
@@ -404,10 +495,12 @@ function App() {
                   <DisplayEvents
                      events={events}
                      displayType="searchResults"
+                     key="searchResults"
                      activeList={activeList}
                      button={addToLists}
                      search={search}
                      userName={userName}
+                     allListsCount={allLists.length}
                   />
                </ul>
             </main>

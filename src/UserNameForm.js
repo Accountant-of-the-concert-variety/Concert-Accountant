@@ -1,4 +1,4 @@
-const UserNameForm = ({ userNameInput, value, button, focus }) => {
+const UserNameForm = ({ userNameInput, value, button }) => {
   return (
     <fieldset>
       <form onSubmit={button} className="logInForm">
