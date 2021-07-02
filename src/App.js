@@ -45,136 +45,138 @@ function App() {
    const [userNameTemplate, setUserNameTemplate] = useState("")
    const [allUsers, setAllUsers] = useState([]);
 
-
-   const [firebaseRef, setFirebaseRef] = useState({});
+   const [firebaseRef, setFirebaseRef] = useState();
    const [firebaseVal, setFirebaseVal] = useState({});
 
 
    // USERNAME FORM
    const userNameInput = (e) => {
-      e.preventDefault();
       setUserNameTemplate(e.target.value)
    }
-   const setUserNameButton = (e) => {
+   const setUserNameButton = (e, specificUserName) => {
       if (e) {
          e.preventDefault();
       }
-      setUserName(userNameTemplate);
-      createLists();
+
+      let newUserName = userNameTemplate;
+
+      if (specificUserName) {
+         newUserName = specificUserName;
+      }
+
+      setUserName(newUserName);
+
+      if (firebaseRef) {
+         firebaseRef.off();
+      }
+
+      setAllLists([])
+
+      setWatchList([]);
    }
 
+   useEffect(() => {
+      if (!firebaseVal) {
+         return;
+      }
 
-   // CREATE LIST FORM
-   const createLists = () => {
-      console.log(userNameTemplate);
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists`);
       setWatchList([]);
       setActiveListItems([]);
 
-      dbRef.on("value", response => {
-         let lists = [];
+      let lists = [];
 
-         for (const list in response.val()) {
-            if (list !== "watchList") {
-               lists.push({ name: list, budget: response.val()[list].budget });
-            }
-            updateUserLists(list);
+      const data = firebaseVal.lists;
+
+      for (const list in data) {
+         if (list !== "watchList") {
+            lists.push({ name: list, budget: data[list].budget });
          }
+         updateUserLists(list);
+      }
 
+      setAllLists(lists);
 
-         setAllLists(lists);
-      })
-   }
+      function updateUserLists(list) {
 
+         const newData = firebaseVal.lists[list].events;
 
-   function updateUserLists(list) {
-      const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}/events`);
-
-      dbRef.on("value", (response) => {
          const newState = [];
-         const data = response.val();
 
          if (list === "watchList") {
-            for (let key in data) {
-               newState.push({ key: key, name: data[key] });
+            for (let key in newData) {
+               newState.push({ key: key, name: newData[key] });
             }
 
             setWatchList(newState);
 
          } else if (list === activeList) {
-            for (const key in data) {
-               newState.push(data[key])
+            for (const key in newData) {
+               newState.push(newData[key])
             }
 
             setActiveListItems(newState);
          }
-      });
-   }
+      }
+   }, [setAllLists, firebaseVal, activeList])
 
-   useEffect(() => {
-      updateUserLists(activeList);
-   }, [activeList])
 
    function submitNewList(list, e) {
       e.preventDefault();
 
-      const dbRef = firebase.database().ref(`${userName}/lists/${list.name}/budget`);
+      if (!userName) {
+         return;
+      }
+      if (!list.name) {
+         return;
+      }
 
-      dbRef.set(list.budget);
+      if (!list.budget) {
+         list.budget = 0;
+      }
 
-      changeActiveList(list.name, e);
+      firebaseRef.child(`/lists/${list.name}/budget`).set(list.budget);
+
+      changeActiveList(list.name);
    }
 
    // ACTIVE LIST BUTTON
-   function changeActiveList(list, e) {
-      e.preventDefault(); //maybe remove
-
+   function changeActiveList(list) {
       setActiveList(list);
-      updateUserLists(list);
    }
-
 
    function removeFromLists(list, item) {
       let title = item.title;
 
       if (!item.title) {
          title = item;
-         console.log(title);
       }
-      firebaseRef.child(`${userName}/lists/${list}/events/${title}`).remove();
+
+      firebaseRef.child(`/lists/${list}/events/${title}`).remove();
    }
 
    function addToLists(list, item) {
+
+      // changeListItems(list, item, "set")
+
+      if (!userName) {
+         return;
+      }
+      if (allLists.length === 0) {
+         return
+      }
+
+      if (!activeList) {
+         return;
+      }
+
       let title = item.title;
 
       if (!item.title) {
          title = item;
-         console.log(title);
       }
 
-      firebaseRef.child(`${userName}/lists/${list}/events/${title}`).set(item);
+      firebaseRef.child(`/lists/${list}/events/${title}`).set(item);
    }
-
-
-   // REMOVE BUTTONS
-   const removeActiveListItem = (listItem) => {
-      removeFromLists(activeList, listItem);
-   }
-
-   const removeWatchListItem = (listId) => {
-      console.log(listId);
-      removeFromLists("watchList", listId);
-   }
-
-   // ADD BUTTONS
-   function addToActiveList(listItem) {
-      addToLists(activeList, listItem);
-   }
-   function addToWatchList() {
-      addToLists("watchList", search)
-   }
-
-
 
    // SEARCH FORM
    const searchQuery = (e) => {
@@ -205,11 +207,6 @@ function App() {
          }).then(jsonData => {
             filterEvents(jsonData);
          })
-         .catch(data => {
-            filterEvents(data);
-            addToWatchList(data);
-            console.log("not found");
-         })
    };
 
 
@@ -230,17 +227,33 @@ function App() {
             const name = event.name;
             const date = event.dates.start.localDate;
 
-            const venueName = event._embedded.venues[0].name;
-            const country = event._embedded.venues[0].country.countryCode;
-            const city = event._embedded.venues[0].city.name;
+            let venue = null;
+            let venueFile = [];
+            let venueName = "";
+            let country = "";
+            let city = "";
+
+            if (event._embedded) {
+               venueFile = event._embedded.venues[0];
+
+               if (venueFile.name)
+                  venueName = venueFile.name;
+
+               if (venueFile.country) {
+                  country = venueFile.country.countryCode;
+               }
+               if (venueFile.city) {
+                  city = venueFile.city.name;
+               }
+
+               venue = {
+                  name: venueName,
+                  city: city,
+                  country: country
+               }
+            }
 
             const key = `${userName + event.id}`;
-
-            const venue = {
-               name: venueName,
-               city: city,
-               country: country
-            }
 
             let price = {
                min: 0,
@@ -262,31 +275,39 @@ function App() {
          setEvents(eventList);
       } else {
          const name = "No events found. Would you like to add to watch-list to search later?";
+         const key = "noResults"
 
          const image = "https://i0.wp.com/www.ecommerce-nation.com/wp-content/uploads/2017/08/How-to-Give-Your-E-Commerce-No-Results-Page-the-Power-to-Sell.png?resize=1000%2C600&ssl=1"
 
-         const event = [{ name, image }]
+         const event = [{ name, image, key }]
 
          setEvents(event);
       }
    }
 
-   // console.log(firebaseData);
-
    useEffect(() => {
-      const dbRef = firebase.database().ref();
+      if (!userName) {
+         return
+      }
+
+      const dbRef = firebase.database().ref(userName);
       setFirebaseRef(dbRef);
 
       dbRef.on('value', (response) => {
          setFirebaseVal(response.val());
+      })
+   }, [setFirebaseRef, userName])
+
+   useEffect(() => {
+      const dbRef = firebase.database().ref();
+
+      dbRef.once('value', (response) => {
          const nameState = []
          const data = response.val();
          for (let key in data) {
             nameState.push({ key: key, name: data[key] })
          }
          setAllUsers(nameState);
-         console.log("firebase updating")
-
       })
    }, [])
 
@@ -306,30 +327,31 @@ function App() {
             </header>
 
             <main>
-               
-                  <Description />
 
-                  <Search
-                     submitSearch={submitForm}
-                     value={search}
-                     onChange={searchQuery}
-                  />
+               <Description />
+
+               <Search
+                  submitSearch={submitForm}
+                  value={search}
+                  onChange={searchQuery}
+               />
 
                <div className="searchResultsDisplay">
 
                   <aside className="cornerPiece">
-                     <button className = "wButton" onClick={() => {
+                     <button className="wButton" onClick={() => {
                         setDispayWatchList(!displayWatchList)
                      }}>WATCHLIST</button>
                      {displayWatchList ? <ol>
                         <p className="yourWatchlist">{userName} saved for later</p>
                         <WatchList
                            saveList={watchList}
-                           remove={removeWatchListItem}
+                           remove={removeFromLists}
                            searchList={submitForm}
                         />
                      </ol> : null}
                   </aside>
+
 
                   <div className="userForm">
                      <h3>CREATE YOUR LIST</h3>
@@ -346,13 +368,13 @@ function App() {
                         onChange={addListOnChange}
                      />
 
-                     <ul className = "userCreatedLists" >
+                     <ul className="userCreatedLists" >
                         <h4>{`User logged in: ${userName}`}</h4>
                         {
                            allLists.map(list => {
                               return (
-                                 <li>
-                                    <button onClick={(e) => { changeActiveList(list.name, e) }}>
+                                 <li key={`${userName}${list.name}`}>
+                                    <button onClick={() => { changeActiveList(list.name) }}>
                                        <Link to="/list">{`${list.name}  $${list.budget}`}</Link>
                                     </button>
                                  </li>
@@ -363,9 +385,12 @@ function App() {
 
                      <Route exact path="/list">
                         <DisplayEvents
-                           remove={removeActiveListItem}
                            events={activeListItems}
                            displayType="listItems"
+                           // key={`listItems${Math.random()}`}
+                           key={`${userName}listItems`}
+                           activeList={activeList}
+                           button={removeFromLists}
                         />
                      </Route>
 
@@ -378,7 +403,7 @@ function App() {
                                     onClick={(e) => {
                                        e.preventDefault()
                                        setUserNameTemplate(`${name.key}`);
-                                       setUserNameButton();
+                                       setUserNameButton(e, name.key);
                                     }}
                                  >
                                     {name.key}
@@ -393,15 +418,20 @@ function App() {
                      <DisplayEvents
                         events={events}
                         displayType="searchResults"
+                        key="searchResults"
                         activeList={activeList}
-                        button={{ addToActiveList, addToWatchList }}
+                        button={addToLists}
+                        search={search}
+                        userName={userName}
+                        allListsCount={allLists.length}
                      />
                   </ul>
+
                </div>
-            </main>
-            <Footbar/>
-         </div>
-      </Router>
+            </main >
+            <Footbar />
+         </div >
+      </Router >
    );
 }
 
