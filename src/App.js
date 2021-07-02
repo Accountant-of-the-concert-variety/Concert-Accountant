@@ -25,6 +25,7 @@ import Search from './Search';
 import WatchList from './WatchList';
 import UserNameForm from './UserNameForm';
 import AddLists from './AddLists';
+import Description from './Description';
 import firebase from './firebase';
 
 function App() {
@@ -36,6 +37,8 @@ function App() {
    const [activeListItems, setActiveListItems] = useState([]);
 
    const [watchList, setWatchList] = useState([]);
+   const [displayWatchList, setDispayWatchList] = useState(false);
+
    const [createList, setCreateList] = useState({ name: "", budget: "" });
 
    const [userName, setUserName] = useState("");
@@ -45,9 +48,6 @@ function App() {
 
    const [firebaseRef, setFirebaseRef] = useState({});
    const [firebaseVal, setFirebaseVal] = useState({});
-
-   // console.log("search = " + search);
-   // console.log(userName);
 
 
    // USERNAME FORM
@@ -88,7 +88,6 @@ function App() {
 
 
    function updateUserLists(list) {
-      // console.log(list);
       const dbRef = firebase.database().ref(`${userNameTemplate}/lists/${list}/events`);
 
       dbRef.on("value", (response) => {
@@ -114,7 +113,6 @@ function App() {
 
    useEffect(() => {
       updateUserLists(activeList);
-      // eslint-disable-next-line
    }, [activeList])
 
    function submitNewList(list, e) {
@@ -131,7 +129,6 @@ function App() {
    function changeActiveList(list, e) {
       e.preventDefault(); //maybe remove
 
-      // console.log(list);
       setActiveList(list);
       updateUserLists(list);
    }
@@ -144,9 +141,6 @@ function App() {
          title = item;
          console.log(title);
       }
-
-      // firebaseRef.child(`${userName}/lists/${list}/events/${title}`).set(item);
-
       firebaseRef.child(`${userName}/lists/${list}/events/${title}`).remove();
    }
 
@@ -304,93 +298,106 @@ function App() {
 
    return (
       <Router>
-         <div className="App">
+         <div className="App wrapper">
+
             <header>
                <h1 className="wrapper" >CONCERT ACCOUNTANT</h1>
-               <h2>Search For Events and Make YOUR LIST</h2>
+               <h2>Planning that one summer roadtrip? Set up a list and see what works for you. Create a list with your budgeted amount and add events in the area! </h2>
             </header>
-            <Search
-               submitSearch={submitForm}
-               value={search}
-               onChange={searchQuery}
-            />
 
             <main>
-               <aside className="userForm">
-                  <h3>Create Your Lists</h3>
+               
+                  <Description />
 
-                  <UserNameForm
-                     userNameInput={userNameInput}
-                     value={userNameTemplate}
-                     button={setUserNameButton}
+                  <Search
+                     submitSearch={submitForm}
+                     value={search}
+                     onChange={searchQuery}
                   />
 
-                  <AddLists
-                     submitList={(e) => submitNewList(createList, e)}
-                     value={createList}
-                     onChange={addListOnChange}
-                  />
+               <div className="searchResultsDisplay">
+
+                  <aside className="cornerPiece">
+                     <button className = "wButton" onClick={() => {
+                        setDispayWatchList(!displayWatchList)
+                     }}>WATCHLIST</button>
+                     {displayWatchList ? <ol>
+                        <p className="yourWatchlist">{userName} saved for later</p>
+                        <WatchList
+                           saveList={watchList}
+                           remove={removeWatchListItem}
+                           searchList={submitForm}
+                        />
+                     </ol> : null}
+                  </aside>
+
+                  <div className="userForm">
+                     <h3>CREATE YOUR LIST</h3>
+
+                     <UserNameForm
+                        userNameInput={userNameInput}
+                        value={userNameTemplate}
+                        button={setUserNameButton}
+                     />
+
+                     <AddLists
+                        submitList={(e) => submitNewList(createList, e)}
+                        value={createList}
+                        onChange={addListOnChange}
+                     />
+
+                     <ul className = "userCreatedLists" >
+                        <h4>{`User logged in: ${userName}`}</h4>
+                        {
+                           allLists.map(list => {
+                              return (
+                                 <li>
+                                    <button onClick={(e) => { changeActiveList(list.name, e) }}>
+                                       <Link to="/list">{`${list.name}  $${list.budget}`}</Link>
+                                    </button>
+                                 </li>
+                              )
+                           })
+                        }
+                     </ul>
+
+                     <Route exact path="/list">
+                        <DisplayEvents
+                           remove={removeActiveListItem}
+                           events={activeListItems}
+                           displayType="listItems"
+                        />
+                     </Route>
+
+                     <div className="allListForm">
+                        <h4>Check Out Other User Lists!</h4>
+                        <select name="" id="">
+                           {allUsers.map((name) => {
+                              return (
+                                 <option key={name.key}
+                                    onClick={(e) => {
+                                       e.preventDefault()
+                                       setUserNameTemplate(`${name.key}`);
+                                       setUserNameButton();
+                                    }}
+                                 >
+                                    {name.key}
+                                 </option>
+                              );
+                           })}
+                        </select>
+                     </div>
+                  </div>
 
                   <ul>
-                     <h4>{`User logged in: ${userName}`}</h4>
-                     {
-                        allLists.map(list => {
-                           return (
-                              <li>
-                                 <button onClick={(e) => { changeActiveList(list.name, e) }}>
-                                    <Link to="/list">{list.name + list.budget}</Link>
-                                 </button>
-                              </li>
-                           )
-                        })
-                     }
-                  </ul>
-
-                  <Route exact path="/list">
                      <DisplayEvents
-                        remove={removeActiveListItem}
-                        events={activeListItems}
-                        displayType="listItems"
+                        events={events}
+                        displayType="searchResults"
+                        activeList={activeList}
+                        button={{ addToActiveList, addToWatchList }}
                      />
-                  </Route>
-
-                  <ol>
-                     <p className="yourWatchlist">Your Watchlist</p>
-                     <WatchList
-                        saveList={watchList}
-                        remove={removeWatchListItem}
-                        searchList={submitForm}
-                     />
-                  </ol>
-
-                  <div className="allListForm">
-                     <h4>Check Out Other User Lists!</h4>
-                     <select name="" id="">
-                        {allUsers.map((name) => {
-                           return (
-                              <option key={name.key}
-                                 onClick={(e) => {
-                                    e.preventDefault()
-                                    setUserNameTemplate(`${name.key}`);
-                                    setUserNameButton();
-                                 }}
-                              >
-                                 {name.key}
-                              </option>
-                           );
-                        })}
-                     </select>
-                  </div>
-               </aside>
-
-               <ul>
-                  <DisplayEvents
-                     events={events}
-                     displayType="searchResults"
-                     activeList={activeList}
-                     button={{ addToActiveList, addToWatchList }}
-                  />
-               </ul>
+                  </ul>
+               </div>
             </main>
             <Footbar/>
          </div>
