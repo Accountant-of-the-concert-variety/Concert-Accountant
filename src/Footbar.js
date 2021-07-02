@@ -2,7 +2,7 @@ function Footer() {
   return (
     <footer>
       <div className="socials">
-        <span className="contact">contact me</span>
+        <span className="contact">Contact Us</span>
         <ul>
           <li>Brandon Carter</li>
           <li>
@@ -61,8 +61,8 @@ function Footer() {
             </a>
           </li>
         </ul>
+        <p>Powered by Ticketmaster&reg; API</p>
       </div>
-
       <div className="juno">Created at Juno College / 2021</div>
     </footer>
   );
