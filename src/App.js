@@ -42,7 +42,6 @@ function App() {
    const [userNameTemplate, setUserNameTemplate] = useState("")
    const [allUsers, setAllUsers] = useState([]);
 
-
    const [firebaseRef, setFirebaseRef] = useState({});
    const [firebaseVal, setFirebaseVal] = useState({});
 
@@ -120,6 +119,15 @@ function App() {
    function submitNewList(list, e) {
       e.preventDefault();
 
+      console.log("trying");
+      if(!list.name) {
+         return;
+      }
+      
+      if(!list.budget) {
+         list.budget = 0;
+      }
+
       const dbRef = firebase.database().ref(`${userName}/lists/${list.name}/budget`);
 
       dbRef.set(list.budget);
@@ -140,6 +148,8 @@ function App() {
    function removeFromLists(list, item) {
       let title = item.title;
 
+      console.log(item);
+
       if (!item.title) {
          title = item;
          console.log(title);
@@ -151,6 +161,12 @@ function App() {
    }
 
    function addToLists(list, item) {
+
+      if(!userName){
+         return;
+      }
+
+      console.log(list, item);
       let title = item.title;
 
       if (!item.title) {
@@ -336,7 +352,7 @@ function App() {
                      {
                         allLists.map(list => {
                            return (
-                              <li>
+                              <li key={list.name}>
                                  <button onClick={(e) => { changeActiveList(list.name, e) }}>
                                     <Link to="/list">{list.name + list.budget}</Link>
                                  </button>
@@ -348,9 +364,10 @@ function App() {
 
                   <Route exact path="/list">
                      <DisplayEvents
-                        remove={removeActiveListItem}
                         events={activeListItems}
                         displayType="listItems"
+                        activeList={activeList}
+                        button={removeFromLists}
                      />
                   </Route>
 
@@ -358,7 +375,7 @@ function App() {
                      <p className="yourWatchlist">Your Watchlist</p>
                      <WatchList
                         saveList={watchList}
-                        remove={removeWatchListItem}
+                        remove={removeFromLists}
                         searchList={submitForm}
                      />
                   </ol>
@@ -388,11 +405,13 @@ function App() {
                      events={events}
                      displayType="searchResults"
                      activeList={activeList}
-                     button={{ addToActiveList, addToWatchList }}
+                     button={addToLists}
+                     search={search}
+                     userName={userName}
                   />
                </ul>
             </main>
-            <Footbar/>
+            <Footbar />
          </div>
       </Router>
    );

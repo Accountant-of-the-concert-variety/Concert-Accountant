@@ -1,6 +1,6 @@
 import "./App.css";
 
-function DisplayEvents({ events, displayType, activeList, button, remove }) {
+function DisplayEvents({ events, displayType, activeList, button, search, userName }) {
    const domButton = {};
 
    const eventItems = events.map((event) => {
@@ -54,18 +54,20 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
 
       if (displayType === "searchResults") {
          if (type === "event") {
-            domButton.button = button.addToActiveList;
+            domButton.button = () => button(activeList, event);
             domButton.text = `Add to "${activeList}" list`;
-            console.log("adding to my list");
          } else {
-            domButton.button = button.addToWatchList;
+            domButton.button = () => button("watchList", search);
             domButton.text = `Add to watch list`;
-            console.log("adding to watch list");
+         }
+
+         if(!userName) {
+            domButton.text = `Please sign in first`
          }
 
          displayItem = (
             <li className="searchResult" key={`searchResults${key}`}>
-               {console.log("rerender")}
+               {/* {console.log("rerender")} */}
 
                <div className="flex-container">
                   <div className="image-container">{eventImage}</div>
@@ -77,9 +79,7 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
 
                      <button
                         className="btn btn-2 btn-2g"
-                        onClick={() => {
-                           domButton.button(event);
-                        }}
+                        onClick={domButton.button}
                      >
                         {domButton.text}
                      </button>
@@ -88,6 +88,9 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
             </li>
          );
       } else if (displayType === "listItems") {
+         domButton.button = () => button(activeList, event)
+         domButton.text = "x";
+
          displayItem = (
             <div>
                <h4>{activeList}</h4>
@@ -98,7 +101,11 @@ function DisplayEvents({ events, displayType, activeList, button, remove }) {
                   </div>
                   {eventImage}
                </li>
-               <button onClick={() => remove(event)}>x</button>
+               <button
+                  onClick={domButton.button}
+               >
+                  {domButton.text}
+               </button>
             </div>
          );
       }
